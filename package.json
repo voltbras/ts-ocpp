@@ -1,0 +1,11 @@
+{
+  "name": "ts-ocpp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:estevam31/ts-ocpp.git",
+  "author": "estevam31 <estevamvinicius31@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^4.0.3"
+  }
+}
