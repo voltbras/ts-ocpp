@@ -5,35 +5,37 @@ export const parseOCPPMessage = (message: OCPPJRawMessage): OCPPJMessage => {
     const [
       messageType,
       messageId,
-      commandNameOrPayloadOrErrorCode,
-      commandPayloadOrErrorDescription,
-      errorDetails,
+      ...rest
     ] = JSON.parse(message) as Array<any>;
     switch (messageType as MessageType) {
       case MessageType.CALL: {
+        const [action, payload] = rest;
         return {
           messageType: MessageType.CALL,
           messageId,
-          action: commandNameOrPayloadOrErrorCode,
-          payload: commandPayloadOrErrorDescription,
+          action,
+          ...(payload ? { payload } : {})
         };
       }
       case MessageType.CALLRESULT: {
+        const [payload] = rest;
         return {
           messageType: MessageType.CALLRESULT,
           messageId,
-          payload: commandPayloadOrErrorDescription,
+          ...(payload ? { payload } : {})
         };
       }
       case MessageType.CALLERROR: {
+        const [errorCode, errorDescription, errorDetails] = rest;
         return {
           messageType: MessageType.CALLERROR,
           messageId,
-          errorDetails,
-          errorCode: commandNameOrPayloadOrErrorCode,
-          errorDescription: commandPayloadOrErrorDescription,
+          errorCode,
+          errorDescription,
+          ...(errorDetails ? { errorDetails } : {}),
         };
       }
+      default: throw new Error(`Not supported message type: ${messageType}`);
     }
   } catch (err) {
     throw new Error(

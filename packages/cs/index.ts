@@ -1,4 +1,6 @@
 import ChargePointRequest from '../messages/cpreq';
+import ChargePointResponse from '../messages/cpresp';
+import { createWebSocketsServer } from './ws/ws';
 
 export type ChargePointMessageHandler = (
   cpRequest: ChargePointRequest,
@@ -6,11 +8,12 @@ export type ChargePointMessageHandler = (
 ) => ChargePointResponse;
 
 export interface CentralSystem {
-  run: (port: string, cpHandler: ChargePointMessageHandler) => void;
+  run: (port: number, cpHandler: ChargePointMessageHandler) => void;
 }
 
 export const CentralSystem: CentralSystem = {
-  run: (port, cpHandler) => {},
+  run: (port, cpHandler) => {
+    createWebSocketsServer(port, '0.0.0.0', cpHandler)
+  },
 };
 
-function handleWebSocket();

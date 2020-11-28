@@ -2,6 +2,7 @@ import type { IncomingMessage } from 'http';
 import { ChargePointMessageHandler } from '..';
 import { SUPPORTED_PROTOCOLS } from '../constants';
 import WebSocket from 'ws';
+import { createConnection } from './connection';
 
 export type WebSocketsServerFactory = (
   port: number,
@@ -45,5 +46,6 @@ const onConnection = (
     console.error('Closed connection: unsupported protocol');
     return socket.close();
   }
-  const connection = createConnection(socket, request, cpHandler);
+  const connection = createConnection(request, cpHandler);
+  socket.on('message', connection.onMessage);
 };

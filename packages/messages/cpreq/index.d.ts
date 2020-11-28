@@ -1,4 +1,4 @@
-import { Timestamp } from '../types';
+import { Timestamp } from '../../types';
 
 type DiagnosticsStatus = 'Idle' | 'Uploaded' | 'UploadFailed' | 'Uploading';
 
