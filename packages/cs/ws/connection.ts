@@ -1,74 +1,53 @@
-import type { IncomingMessage } from 'http';
-import { parseOCPPMessage } from './helpers';
-import ActionName from '../../messages/action';
-import { ChargePointMessageHandler } from '..';
-import ChargePointRequest from '../../messages/cpreq';
+import WebSocket from 'ws';
+import { parseOCPPMessage, stringifyOCPPMessage } from './format';
+import { MessageType, OCPPJMessage } from './types';
 import { validateMessage } from '../../messages/cpreq/validation';
+import { ChargePointMessageHandler } from '..';
+import { Fail, Maybe, None, Success, Some } from 'monet';
+import { OCPPApplicationError } from '../../errors/index';
+import ChargePointResponse from '../../messages/cpresp';
 
-export type OCPPJRawMessage = string;
-export type ErrorCode =
-  | 'NotImplemented'
-  | 'NotSupported'
-  | 'InternalError'
-  | 'ProtocolError'
-  | 'SecurityError'
-  | 'FormationViolation'
-  | 'PropertyConstraintViolation'
-  | 'OccurenceConstraintViolation'
-  | 'TypeConstraintViolation'
-  | 'GenericError';
+export default class Connection {
+  constructor(
+    private readonly cpId: string,
+    private readonly socket: WebSocket,
+    private readonly cpHandler: ChargePointMessageHandler,
+  ) { }
 
-export enum MessageType {
-  CALL = 2,
-  CALLRESULT = 3,
-  CALLERROR = 4,
-}
-export type OCPPJMessage = { messageId: string } & (
-  | {
-    messageType: MessageType.CALL;
-    action: ActionName;
-    payload?: Object;
+  public handleWebsocketData(data: WebSocket.Data) {
+    parseOCPPMessage(data)
+      .map(msg => this.handleOCPPMessage(msg))
+      .forEach(result =>
+        result.forEach(response => {
+          this.socket.send(response)
+        })
+      )
   }
-  | {
-    messageType: MessageType.CALLRESULT;
-    payload?: Object;
-  }
-  | {
-    messageType: MessageType.CALLERROR;
-    errorCode: ErrorCode;
-    errorDescription: string;
-    errorDetails?: Object;
-  }
-);
 
-export type Connection = {
-  onMessage: (
-    rawMessage: OCPPJRawMessage,
-    cpHandler: ChargePointMessageHandler
-  ) => any;
-};
-
-export type WebSocketConnectionHandlerFactory = (
-  request: IncomingMessage,
-  cpHandler: ChargePointMessageHandler
-) => Connection;
-
-export const createConnection: WebSocketConnectionHandlerFactory = (
-  request,
-  cpHandler
-) => ({
-  onMessage: onMessage(request, cpHandler),
-});
-
-const onMessage = (request: IncomingMessage, cpHandler: ChargePointMessageHandler): Connection['onMessage'] => rawMessage => {
-  const cpId = request.url?.split('/').pop();
-  if (!cpId) throw new Error('no chargepoint ID provided');
-  const message = parseOCPPMessage(rawMessage);
-  switch (message.messageType) {
-    case MessageType.CALL: {
-      const ocppMessage = validateMessage(message.action, message.payload ?? {});
-      if (!ocppMessage) throw new Error('invalid ocpp message');
-      cpHandler(ocppMessage, cpId);
+  private handleOCPPMessage(message: OCPPJMessage): Maybe<string> {
+    switch (message.type) {
+      case MessageType.CALL:
+        const response =
+          validateMessage(message.action, message.payload ?? {})
+            .flatMap<Omit<ChargePointResponse, 'action'>>(request => {
+              const [response, error] = this.cpHandler(request, this.cpId);
+              if (error) return Fail(new OCPPApplicationError('on handling chargepoint request').wrap(error));
+              return Success(response!);
+            })
+            // merge both failure and success to a OCPP-J message
+            .fold<OCPPJMessage>(fail => ({
+              id: message.id,
+              type: MessageType.CALLERROR,
+              errorCode: 'GenericError',
+              errorDescription: `[${fail.name}] ${fail.message}`,
+              errorDetails: fail,
+            }), success => ({
+              type: MessageType.CALLRESULT,
+              id: message.id,
+              payload: success,
+            }));
+        return Some(stringifyOCPPMessage(response));
     }
+    return None();
   }
-};
+}

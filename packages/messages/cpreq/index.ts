@@ -34,10 +34,12 @@ type MeterValue = {
 };
 
 type Authorize = {
+  action: 'Authorize';
   idTag: string;
 };
 
 type BootNotification = {
+  action: 'BootNotification';
   chargeBoxSerialNumber?: string;
   chargePointModel: string;
   chargePointSerialNumber?: string;
@@ -50,28 +52,34 @@ type BootNotification = {
 };
 
 type DataTransfer = {
+  action: 'DataTransfer';
   data: string;
   messageId?: string;
   vendorId?: string;
 };
 
 type DiagnosticsStatusNotification = {
+  action: 'DiagnosticsStatusNotification';
   status: DiagnosticsStatus;
 };
 
 type FirmwareStatusNotification = {
+  action: 'FirmwareStatusNotification';
   status: FirmwareStatus;
 };
 
-type Heartbeat = {};
+type Heartbeat = { action: 'Heartbeat' };
+
 
 type MeterValues = {
+  action: 'MeterValues';
   connectorId: number;
   meterValue: MeterValue[];
   transactionId: number;
 };
 
 type StartTransaction = {
+  action: 'StartTransaction';
   connectorId: number;
   idTag: string;
   meterStart: number;
@@ -80,6 +88,7 @@ type StartTransaction = {
 };
 
 type StatusNotification = {
+  action: 'StatusNotification';
   connectorId: number;
   errorCode: string; // TODO: cpstatus
   info?: string;
@@ -90,6 +99,7 @@ type StatusNotification = {
 };
 
 type StopTransaction = {
+  action: 'StopTransaction';
   idTag?: string;
   meterStop: number;
   reason?: string;
@@ -110,4 +120,5 @@ type ChargePointRequest =
   | StatusNotification
   | StopTransaction;
 
+export * from './validation';
 export default ChargePointRequest;
