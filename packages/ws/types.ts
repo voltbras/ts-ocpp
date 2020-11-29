@@ -1,5 +1,5 @@
-import ActionName from '../../messages/action';
 import WebSocket from 'ws';
+import { ActionName } from '../messages';
 
 export type OCPPJRawMessage = WebSocket.Data;
 export type ErrorCode =

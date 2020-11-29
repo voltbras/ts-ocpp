@@ -1,17 +1,16 @@
 import WebSocket from 'ws';
 import { parseOCPPMessage, stringifyOCPPMessage } from './format';
 import { MessageType, OCPPJMessage } from './types';
-import { validateMessage } from '../../messages/cpreq/validation';
-import { ChargePointMessageHandler } from '..';
 import { Fail, Maybe, None, Success, Some } from 'monet';
-import { OCPPApplicationError } from '../../errors/index';
-import ChargePointResponse from '../../messages/cpresp';
+import { ActionName, RequestHandler, Response } from '../messages';
+import { OCPPApplicationError } from '../errors/index';
+import { validateMessage } from '../messages/validation';
 
-export default class Connection {
+export default class Connection<T extends ActionName> {
   constructor(
-    private readonly cpId: string,
     private readonly socket: WebSocket,
-    private readonly cpHandler: ChargePointMessageHandler,
+    private readonly requestHandler: RequestHandler<T>,
+    private readonly acceptedActions: T[],
   ) { }
 
   public handleWebsocketData(data: WebSocket.Data) {
@@ -28,9 +27,9 @@ export default class Connection {
     switch (message.type) {
       case MessageType.CALL:
         const response =
-          validateMessage(message.action, message.payload ?? {})
-            .flatMap<Omit<ChargePointResponse, 'action'>>(request => {
-              const [response, error] = this.cpHandler(request, this.cpId);
+          validateMessage(message.action, message.payload ?? {}, this.acceptedActions)
+            .flatMap<Response<T>>(request => {
+              const [response, error] = this.requestHandler(request);
               if (error) return Fail(new OCPPApplicationError('on handling chargepoint request').wrap(error));
               return Success(response!);
             })

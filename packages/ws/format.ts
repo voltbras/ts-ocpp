@@ -1,6 +1,6 @@
 import { MessageType, OCPPJMessage, OCPPJRawMessage } from './types';
 import { Validation, Fail, Success } from 'monet';
-import { ValidationError } from '../../errors';
+import { ValidationError } from '../errors';
 
 export const parseOCPPMessage = (raw: OCPPJRawMessage): Validation<ValidationError, OCPPJMessage> => {
   try {
