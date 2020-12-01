@@ -4,8 +4,7 @@ import WebSocket from 'ws';
 import { Connection, SUPPORTED_PROTOCOLS } from '../ws';
 
 export default class ChargePoint {
-  private socket: WebSocket | undefined;
-  private socketConnected = false;
+  private socket?: WebSocket;
 
   constructor(
     private readonly cpId: string,
@@ -13,7 +12,7 @@ export default class ChargePoint {
     private readonly csUrl: string
   ) {}
 
-  connect() {
+  async connect() {
     const url = `${this.csUrl}/${this.cpId}`;
     this.socket = new WebSocket(url, SUPPORTED_PROTOCOLS);
 
@@ -22,12 +21,16 @@ export default class ChargePoint {
       this.requestHandler,
       centralSystemActions
     );
-    this.socket.on('open', () => (this.socketConnected = true));
+    // this.socket.on('close', () => (this.socket = undefined));
     this.socket.on('error', console.error);
     this.socket.on('message', (data) => connection.handleWebsocketData(data));
+
+    return new Promise((resolve) => {
+      this.socket?.on('open', () => resolve(console.log(!!this.socket)));
+    });
   }
 
   close() {
-    if (this.socketConnected) this.socket?.terminate();
+    this.socket?.close();
   }
 }

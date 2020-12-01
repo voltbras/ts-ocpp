@@ -9,13 +9,13 @@ describe('test cs<->cp communication', () => {
 
   const cp = new ChargePoint(
     '123',
-    (req) => [undefined, new Error('123')],
+    () => [undefined, new Error('123')],
     `ws://localhost:${PORT}`
   );
 
   afterAll(() => {
-    cs.close();
     cp.close();
+    cs.close();
   });
 
   let triggerConnected = (cpId: string) => {};
@@ -30,7 +30,8 @@ describe('test cs<->cp communication', () => {
     });
 
   it('should connect', async () => {
-    cp.connect();
+    const p = cp.connect();
     await waitForConnection('123');
+    await p;
   });
 });
