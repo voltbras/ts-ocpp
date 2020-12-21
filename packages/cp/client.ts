@@ -1,10 +1,13 @@
-import { RequestHandler } from '../messages';
+import { Request, RequestHandler, Response } from '../messages';
 import { CentralSystemAction, centralSystemActions } from '../messages/cs';
 import WebSocket from 'ws';
 import { Connection, SUPPORTED_PROTOCOLS } from '../ws';
+import { ChargePointAction } from '../messages/cp';
+import { Validation, Fail } from 'monet';
+import { OCPPRequestError } from '../errors';
 
 export default class ChargePoint {
-  private socket?: WebSocket;
+  private connection?: Connection<CentralSystemAction>;
 
   constructor(
     private readonly cpId: string,
@@ -12,25 +15,32 @@ export default class ChargePoint {
     private readonly csUrl: string
   ) {}
 
-  async connect() {
+  async connect(): Promise<void> {
     const url = `${this.csUrl}/${this.cpId}`;
-    this.socket = new WebSocket(url, SUPPORTED_PROTOCOLS);
+    const socket = new WebSocket(url, SUPPORTED_PROTOCOLS);
 
-    const connection = new Connection(
-      this.socket,
+    this.connection = new Connection<CentralSystemAction>(
+      socket,
       this.requestHandler,
       centralSystemActions
     );
     // this.socket.on('close', () => (this.socket = undefined));
-    this.socket.on('error', console.error);
-    this.socket.on('message', (data) => connection.handleWebsocketData(data));
+    socket.on('error', console.error);
+    socket.on('message', (data) => this.connection?.handleWebsocketData(data));
 
     return new Promise((resolve) => {
-      this.socket?.on('open', () => resolve(console.log(!!this.socket)));
+      socket?.on('open', () => resolve());
     });
   }
 
+  async sendRequest<T extends ChargePointAction>(action: T, payload: Omit<Request<T>, 'action'>): Promise<Validation<OCPPRequestError, Response<T>>> {
+    if (!this.connection) return Fail(new OCPPRequestError('there is no connection to the central system'));
+    // @ts-ignore - TS somehow doesn't understand that this is right
+    const request: Request<T> = { ...payload, action };
+    return this.connection.sendRequest(action, request);
+  }
+
   close() {
-    this.socket?.close();
+    this.connection?.close();
   }
 }
