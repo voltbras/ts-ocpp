@@ -7,7 +7,10 @@ type ChargePointMessage = {
       action: 'Authorize';
       idTag: string
     },
-    response: { idTagInfo: IdTagInfo }
+    response: { 
+      action: 'Authorize';
+      idTagInfo: IdTagInfo
+    }
   };
   BootNotification: {
     request: {
@@ -23,6 +26,7 @@ type ChargePointMessage = {
       meterType?: string;
     },
     response: {
+      action: 'BootNotification';
       currentTime: Timestamp;
       interval: number;
       status: RegistrationStatus;
@@ -35,28 +39,36 @@ type ChargePointMessage = {
       messageId?: string;
       vendorId?: string;
     },
-    response: {}
+    response: {
+      action: 'DataTransfer';
+    }
   };
   DiagnosticsStatusNotification: {
     request: {
       action: 'DiagnosticsStatusNotification';
       status: DiagnosticsStatus;
     },
-    response: {}
+    response: {
+      action: 'DiagnosticsStatusNotification';
+    }
   };
   FirmwareStatusNotification: {
     request: {
       action: 'FirmwareStatusNotification';
       status: FirmwareStatus;
     },
-    response: {}
+    response: {
+      action: 'FirmwareStatusNotification';
+    }
   };
   Heartbeat: {
     request: {
       action: 'Heartbeat';
-
     },
-    response: {}
+    response: {
+      action: 'Heartbeat';
+      currentTime: Timestamp;
+    }
   };
   MeterValues: {
     request: {
@@ -65,7 +77,9 @@ type ChargePointMessage = {
       meterValue: MeterValue[];
       transactionId: number;
     },
-    response: {}
+    response: {
+      action: 'MeterValues';
+    }
   };
   StartTransaction: {
     request: {
@@ -76,7 +90,9 @@ type ChargePointMessage = {
       reservationId?: number;
       timestamp: Timestamp; // TODO: maybe string?
     },
-    response: {}
+    response: {
+      action: 'StartTransaction';
+    }
   };
   StatusNotification: {
     request: {
@@ -89,7 +105,9 @@ type ChargePointMessage = {
       vendorErrorCode?: string;
       vendorId?: string;
     },
-    response: {}
+    response: {
+      action: 'StatusNotification';
+    }
   };
   StopTransaction: {
     request: {
@@ -101,10 +119,11 @@ type ChargePointMessage = {
       transactionData?: TransactionDataItems[];
       transactionId: number;
     },
-    response: {}
+    response: {
+      action: 'StopTransaction';
+    }
   };
 }
-
 export type ChargePointAction = keyof ChargePointMessage;
 
 export const chargePointActions: ChargePointAction[] = [

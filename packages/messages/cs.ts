@@ -1,5 +1,5 @@
 import { Timestamp } from '../types';
-import { AvailabilityType, ChargingProfile, ResetType, LocalAuthorizationList, CentralSystemChargingProfile } from './common';
+import { AvailabilityType, ChargingProfile, ResetType, LocalAuthorizationList, CentralSystemChargingProfile, KeyValue } from './common';
 
 type CentralSystemMessage = {
   CancelReservation: {
@@ -7,7 +7,9 @@ type CentralSystemMessage = {
       action: 'CancelReservation';
       reservationId: number;
     },
-    response: {}
+    response: {
+      action: 'CancelReservation';
+    }
   },
   ChangeAvailability: {
     request: {
@@ -15,7 +17,9 @@ type CentralSystemMessage = {
       connectorId: number;
       type: AvailabilityType;
     },
-    response: {}
+    response: {
+      action: 'ChangeAvailability';
+    }
   },
   ChangeConfiguration: {
     request: {
@@ -23,13 +27,17 @@ type CentralSystemMessage = {
       key: string;
       value: string;
     },
-    response: {}
+    response: {
+      action: 'ChangeConfiguration';
+    }
   },
   ClearCache: {
     request: {
       action: 'ClearCache';
     },
-    response: {}
+    response: {
+      action: 'ClearCache';
+    }
   },
   ClearChargingProfile: {
     request: {
@@ -39,7 +47,9 @@ type CentralSystemMessage = {
       id?: number;
       stackLevel?: number;
     },
-    response: {}
+    response: {
+      action: 'ClearChargingProfile';
+    }
   },
   DataTransfer: {
     request: {
@@ -48,7 +58,9 @@ type CentralSystemMessage = {
       messageId?: string;
       vendorId: string;
     },
-    response: {}
+    response: {
+      action: 'DataTransfer';
+    }
   },
   GetCompositeSchedule: {
     request: {
@@ -57,14 +69,20 @@ type CentralSystemMessage = {
       connectorId: number;
       duration: number;
     },
-    response: {}
+    response: {
+      action: 'GetCompositeSchedule';
+    }
   },
   GetConfiguration: {
     request: {
       action: 'GetConfiguration';
-      key: string[];
+      key?: string[];
     },
-    response: {}
+    response: {
+      action: 'GetConfiguration';
+      configurationKey?: KeyValue[],
+      unknownKey?: string[]
+    }
   },
   GetDiagnostics: {
     request: {
@@ -75,13 +93,17 @@ type CentralSystemMessage = {
       startTime: Timestamp;
       stopTime: Timestamp;
     },
-    response: {}
+    response: {
+      action: 'GetDiagnostics';
+    }
   },
   GetLocalListVersion: {
     request: {
       action: 'GetLocalListVersion';
     },
-    response: {}
+    response: {
+      action: 'GetLocalListVersion';
+    }
   },
   RemoteStartTransaction: {
     request: {
@@ -90,14 +112,18 @@ type CentralSystemMessage = {
       chargingProfile?: ChargingProfile;
       connectorId?: number;
     },
-    response: {}
+    response: {
+      action: 'RemoteStartTransaction';
+    }
   },
   RemoteStopTransaction: {
     request: {
       action: 'RemoteStopTransaction';
       transactionId: number;
     },
-    response: {}
+    response: {
+      action: 'RemoteStopTransaction';
+    }
   },
   ReserveNow: {
     request: {
@@ -108,14 +134,18 @@ type CentralSystemMessage = {
       parentIdTag?: string;
       reservationId: number;
     },
-    response: {}
+    response: {
+      action: 'ReserveNow';
+    }
   },
   Reset: {
     request: {
       action: 'Reset';
       type: ResetType;
     },
-    response: {}
+    response: {
+      action: 'Reset';
+    }
   },
   SendLocalList: {
     request: {
@@ -124,7 +154,9 @@ type CentralSystemMessage = {
       localAuthorizationList?: LocalAuthorizationList[];
       updateType: string;
     },
-    response: {}
+    response: {
+      action: 'SendLocalList';
+    }
   },
   TriggerMessage: {
     request: {
@@ -132,14 +164,18 @@ type CentralSystemMessage = {
       connectorId?: number;
       requestedMessage: string;
     },
-    response: {}
+    response: {
+      action: 'TriggerMessage';
+    }
   },
   UnlockConnector: {
     request: {
       action: 'UnlockConnector';
       connectorId: number
     },
-    response: {}
+    response: {
+      action: 'UnlockConnector';
+    }
   },
   UpdateFirmware: {
     request: {
@@ -149,7 +185,9 @@ type CentralSystemMessage = {
       retrieveDate: Timestamp;
       retryInterval?: number;
     },
-    response: {}
+    response: {
+      action: 'UpdateFirmware';
+    }
   },
   SetChargingProfile: {
     request: {
@@ -157,7 +195,9 @@ type CentralSystemMessage = {
       connectorId: number;
       csChargingProfiles: CentralSystemChargingProfile;
     },
-    response: {}
+    response: {
+      action: 'SetChargingProfile';
+    }
   },
 };
 
