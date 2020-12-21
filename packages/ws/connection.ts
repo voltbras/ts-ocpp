@@ -35,7 +35,7 @@ export default class Connection<T extends ActionName> {
       new OCPPRequestError('other side responded with error', message.errorCode, message.errorDescription, message.errorDetails)
     );
     
-    return Success({ ...message.payload })
+    return Success(message.payload as Response<T>)
   }
 
   public handleWebsocketData(data: WebSocket.Data) {
