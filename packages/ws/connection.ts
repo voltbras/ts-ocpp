@@ -54,6 +54,10 @@ export default class Connection<T extends ActionName> {
     })
   }
 
+  public close() {
+    this.socket.close();
+  }
+
   private handleOCPPMessage(message: OCPPJMessage): Maybe<OCPPJMessage> {
     switch (message.type) {
       case MessageType.CALL:
@@ -82,9 +86,5 @@ export default class Connection<T extends ActionName> {
         this.messageTriggers[message.id](message);
     }
     return None();
-  }
-
-  public close() {
-    this.socket.close();
   }
 }
