@@ -1,8 +1,11 @@
 import WebSocket from 'ws';
 import { IncomingMessage } from 'http';
-import { RequestHandler } from '../messages';
+import { Request, RequestHandler, Response } from '../messages';
 import { ChargePointAction, chargePointActions } from '../messages/cp';
 import { Connection, SUPPORTED_PROTOCOLS } from '../ws';
+import { CentralSystemAction } from '../messages/cs';
+import { Validation, Fail } from 'monet';
+import { OCPPRequestError } from '../errors';
 
 const handleProtocols = (protocols: string[]): string =>
   protocols.find((protocol) => SUPPORTED_PROTOCOLS.includes(protocol)) ?? '';
@@ -44,6 +47,14 @@ export default class CentralSystem {
 
   public close() {
     this.server.close();
+  }
+
+  async sendRequest<T extends CentralSystemAction>(cpId: string, action: T, payload: Omit<Request<T>, 'action'>): Promise<Validation<OCPPRequestError, Response<T>>> {
+    const connection = this.connections[cpId];
+    if (!connection) return Fail(new OCPPRequestError('there is no connection to this charge point'));
+    // @ts-ignore - TS somehow doesn't understand that this is right
+    const request: Request<T> = { ...payload, action };
+    return connection.sendRequest(action, request);
   }
 
   private handleConnection(socket: WebSocket, request: IncomingMessage) {

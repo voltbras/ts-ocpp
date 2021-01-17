@@ -1,3 +1,5 @@
+import { ErrorCode } from "../ws";
+
 export class GenericError extends Error {
   wrap(error: Error): this {
     return {
@@ -8,15 +10,21 @@ export class GenericError extends Error {
 }
 
 export class ValidationError extends GenericError {
-  constructor(message: string) {
-    super(message);
-    this.name = "ValidationError";
-  }
+  name = "ValidationError";
 }
 
 export class OCPPApplicationError extends GenericError {
-  constructor(message: string) {
-    super(message);
-    this.name = "OCPPApplicationError";
+  name = "OCPPApplicationError";
+}
+
+export class OCPPRequestError extends GenericError {
+  name = "OCPPRequestError";
+  constructor(
+    readonly message: string,
+    readonly errorCode?: ErrorCode,
+    readonly errorDescription?: string,
+    readonly errorDetails?: object
+  ) {
+    super();
   }
 }

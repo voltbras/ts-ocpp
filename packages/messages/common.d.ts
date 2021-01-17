@@ -61,6 +61,12 @@ export type ChargingSchedule = {
   startSchedule?: Timestamp;
 };
 
+export type KeyValue = {
+  key: string;
+  readonly: boolean;
+  value?: string;
+}
+
 // ---- CP
 
 
