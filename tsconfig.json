@@ -5,6 +5,7 @@
     "lib": [
       "es2018"
     ],
+    "declaration": true,
     "target": "es2018",
     "sourceMap": true,
     "strict": true,
