@@ -1,4 +1,5 @@
 node_modules
 dist
 .yarnrc
+.npmrc
 /*.log
