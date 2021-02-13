@@ -15,15 +15,17 @@ type ConnectionListener = (
   status: 'disconnected' | 'connected'
 ) => void;
 
+type RequestMetadata = { chargePointId: string };
+
 export default class CentralSystem {
-  private cpHandler: RequestHandler<ChargePointAction, string>;
+  private cpHandler: RequestHandler<ChargePointAction, RequestMetadata>;
   private connections: Record<string, Connection<ChargePointAction>> = {};
   private listeners: ConnectionListener[] = [];
   private server: WebSocket.Server;
 
   constructor(
     port: number,
-    cpHandler: RequestHandler<ChargePointAction, string>,
+    cpHandler: RequestHandler<ChargePointAction, RequestMetadata>,
     host: string = '0.0.0.0'
   ) {
     this.cpHandler = cpHandler;
@@ -50,6 +52,7 @@ export default class CentralSystem {
   }
 
   async sendRequest<T extends CentralSystemAction>(cpId: string, action: T, payload: Omit<Request<T>, 'action'>): Promise<Validation<OCPPRequestError, Response<T>>> {
+    if (!cpId) return Fail(new OCPPRequestError('charge point id was not provided'));
     const connection = this.connections[cpId];
     if (!connection) return Fail(new OCPPRequestError('there is no connection to this charge point'));
     // @ts-ignore - TS somehow doesn't understand that this is right
@@ -72,7 +75,7 @@ export default class CentralSystem {
 
     const connection = new Connection(
       socket,
-      (request) => this.cpHandler(request, cpId),
+      (request) => this.cpHandler(request, { chargePointId: cpId }),
       chargePointActions
     );
     this.connections[cpId] = connection;

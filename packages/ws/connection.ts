@@ -3,9 +3,14 @@ import { parseOCPPMessage, stringifyOCPPMessage } from './format';
 import { MessageType, OCPPJMessage } from './types';
 import { Fail, Maybe, None, Success, Some, Validation } from 'monet';
 import { ActionName, Request, RequestHandler, Response } from '../messages';
-import { OCPPApplicationError, OCPPRequestError } from '../errors/index';
+import { OCPPApplicationError, OCPPRequestError, ValidationError } from '../errors/index';
 import { validateMessage } from '../messages/validation';
 import * as uuid from 'uuid';
+
+const unwrapPromise = async <E, A>(v: Validation<E, Promise<Validation<E, A>>>): Promise<Validation<E, A>> => {
+  if (v.isFail()) return Fail(v.fail());
+  return await v.success();
+}
 
 export default class Connection<T extends ActionName> {
   private messageTriggers: Record<string, (m: OCPPJMessage) => void> = {};
@@ -41,8 +46,8 @@ export default class Connection<T extends ActionName> {
   public handleWebsocketData(data: WebSocket.Data) {
     parseOCPPMessage(data)
       .map(msg => this.handleOCPPMessage(msg))
-      .forEach(result =>
-        result.forEach(response => this.sendOCPPMessage(response))
+      .forEach(async result =>
+        (await result).forEach(response => this.sendOCPPMessage(response))
       )
   }
 
@@ -58,16 +63,21 @@ export default class Connection<T extends ActionName> {
     this.socket.close();
   }
 
-  private handleOCPPMessage(message: OCPPJMessage): Maybe<OCPPJMessage> {
+  private async handleOCPPMessage(message: OCPPJMessage): Promise<Maybe<OCPPJMessage>> {
     switch (message.type) {
       case MessageType.CALL:
-        const response =
+        const responseHandlerAsyncResult =
           validateMessage(message.action, message.payload ?? {}, this.acceptedActions)
-            .flatMap<Response<T>>(request => {
-              const [response, error] = this.requestHandler(request);
+            .map<Promise<Validation<ValidationError, Response<T>>>>(async request => {
+              const [response, error] = await this.requestHandler(request, undefined);
               if (error) return Fail(new OCPPApplicationError('on handling chargepoint request').wrap(error));
               return Success(response!);
             })
+
+        const responseHandlerResult = await unwrapPromise(responseHandlerAsyncResult);
+        
+        const response =
+          responseHandlerResult
             // merge both failure and success to a OCPP-J message
             .fold<OCPPJMessage>(fail => ({
               id: message.id,
@@ -75,10 +85,12 @@ export default class Connection<T extends ActionName> {
               errorCode: 'GenericError',
               errorDescription: `[${fail.name}] ${fail.message}`,
               errorDetails: fail,
-            }), success => ({
+            }),
+            // remove action from payload
+            ({ action, ...payload }) => ({
               type: MessageType.CALLRESULT,
               id: message.id,
-              payload: success,
+              payload,
             }));
         return Some(response);
       case MessageType.CALLERROR:

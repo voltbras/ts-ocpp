@@ -24,16 +24,16 @@ export type OCPPJMessage =
     | {
       type: MessageType.CALL;
       action: ActionName;
-      payload?: Object;
+      payload?: object;
     }
     | {
       type: MessageType.CALLRESULT;
-      payload?: Object;
+      payload?: object;
     }
     | {
       type: MessageType.CALLERROR;
       errorCode: ErrorCode;
       errorDescription: string;
-      errorDetails?: Object;
+      errorDetails?: object;
     }
   );
