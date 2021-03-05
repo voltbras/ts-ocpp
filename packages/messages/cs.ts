@@ -1,203 +1,82 @@
-import { Timestamp } from '../types';
-import { AvailabilityType, ChargingProfile, ResetType, LocalAuthorizationList, CentralSystemChargingProfile, KeyValue } from './common';
+import type * as request from './json/request';
+import type * as response from './json/response';
 
 type CentralSystemMessage = {
   CancelReservation: {
-    request: {
-      action: 'CancelReservation';
-      reservationId: number;
-    },
-    response: {
-      action: 'CancelReservation';
-    }
+    request: request.CancelReservationRequest & { action: 'CancelReservation' },
+    response: response.CancelReservationResponse & { action: 'CancelReservation' },
   },
   ChangeAvailability: {
-    request: {
-      action: 'ChangeAvailability';
-      connectorId: number;
-      type: AvailabilityType;
-    },
-    response: {
-      action: 'ChangeAvailability';
-    }
+    request: request.ChangeAvailabilityRequest & { action: 'ChangeAvailability' },
+    response: response.ChangeAvailabilityResponse & { action: 'ChangeAvailability' },
   },
   ChangeConfiguration: {
-    request: {
-      action: 'ChangeConfiguration';
-      key: string;
-      value: string;
-    },
-    response: {
-      action: 'ChangeConfiguration';
-    }
+    request: request.ChangeConfigurationRequest & { action: 'ChangeConfiguration' },
+    response: response.ChangeConfigurationResponse & { action: 'ChangeConfiguration' },
   },
   ClearCache: {
-    request: {
-      action: 'ClearCache';
-    },
-    response: {
-      action: 'ClearCache';
-    }
+    request: request.ClearCacheRequest & { action: 'ClearCache' },
+    response: response.ClearCacheResponse & { action: 'ClearCache' },
   },
   ClearChargingProfile: {
-    request: {
-      action: 'ClearChargingProfile';
-      chargingProfilePurpose?: string;
-      connectorId?: number;
-      id?: number;
-      stackLevel?: number;
-    },
-    response: {
-      action: 'ClearChargingProfile';
-    }
+    request: request.ClearChargingProfileRequest & { action: 'ClearChargingProfile' },
+    response: response.ClearChargingProfileResponse & { action: 'ClearChargingProfile' },
   },
   DataTransfer: {
-    request: {
-      action: 'DataTransfer';
-      data?: string;
-      messageId?: string;
-      vendorId: string;
-    },
-    response: {
-      action: 'DataTransfer';
-    }
+    request: request.DataTransferRequest & { action: 'DataTransfer' },
+    response: response.DataTransferResponse & { action: 'DataTransfer' },
   },
   GetCompositeSchedule: {
-    request: {
-      action: 'GetCompositeSchedule';
-      chargingRateUnit?: string;
-      connectorId: number;
-      duration: number;
-    },
-    response: {
-      action: 'GetCompositeSchedule';
-    }
+    request: request.GetCompositeScheduleRequest & { action: 'GetCompositeSchedule' },
+    response: response.GetCompositeScheduleResponse & { action: 'GetCompositeSchedule' },
   },
   GetConfiguration: {
-    request: {
-      action: 'GetConfiguration';
-      key?: string[];
-    },
-    response: {
-      action: 'GetConfiguration';
-      configurationKey?: KeyValue[],
-      unknownKey?: string[]
-    }
+    request: request.GetConfigurationRequest & { action: 'GetConfiguration' },
+    response: response.GetConfigurationResponse & { action: 'GetConfiguration' },
   },
   GetDiagnostics: {
-    request: {
-      action: 'GetDiagnostics';
-      location: string;
-      retries: number;
-      retryInterval: number;
-      startTime: Timestamp;
-      stopTime: Timestamp;
-    },
-    response: {
-      action: 'GetDiagnostics';
-    }
+    request: request.GetDiagnosticsRequest & { action: 'GetDiagnostics' },
+    response: response.GetDiagnosticsResponse & { action: 'GetDiagnostics' },
   },
   GetLocalListVersion: {
-    request: {
-      action: 'GetLocalListVersion';
-    },
-    response: {
-      action: 'GetLocalListVersion';
-    }
+    request: request.GetLocalListVersionRequest & { action: 'GetLocalListVersion' },
+    response: response.GetLocalListVersionResponse & { action: 'GetLocalListVersion' },
   },
   RemoteStartTransaction: {
-    request: {
-      action: 'RemoteStartTransaction';
-      idTag: string;
-      chargingProfile?: ChargingProfile;
-      connectorId?: number;
-    },
-    response: {
-      action: 'RemoteStartTransaction';
-    }
+    request: request.RemoteStartTransactionRequest & { action: 'RemoteStartTransaction' },
+    response: response.RemoteStartTransactionResponse & { action: 'RemoteStartTransaction' },
   },
   RemoteStopTransaction: {
-    request: {
-      action: 'RemoteStopTransaction';
-      transactionId: number;
-    },
-    response: {
-      action: 'RemoteStopTransaction';
-    }
+    request: request.RemoteStopTransactionRequest & { action: 'RemoteStopTransaction' },
+    response: response.RemoteStopTransactionResponse & { action: 'RemoteStopTransaction' },
   },
   ReserveNow: {
-    request: {
-      action: 'ReserveNow';
-      connectorId: number;
-      expiryDate: Timestamp;
-      idTag: string;
-      parentIdTag?: string;
-      reservationId: number;
-    },
-    response: {
-      action: 'ReserveNow';
-    }
+    request: request.ReserveNowRequest & { action: 'ReserveNow' },
+    response: response.ReserveNowResponse & { action: 'ReserveNow' },
   },
   Reset: {
-    request: {
-      action: 'Reset';
-      type: ResetType;
-    },
-    response: {
-      action: 'Reset';
-    }
+    request: request.ResetRequest & { action: 'Reset' },
+    response: response.ResetResponse & { action: 'Reset' },
   },
   SendLocalList: {
-    request: {
-      action: 'SendLocalList';
-      listVersion: number;
-      localAuthorizationList?: LocalAuthorizationList[];
-      updateType: string;
-    },
-    response: {
-      action: 'SendLocalList';
-    }
+    request: request.SendLocalListRequest & { action: 'SendLocalList' },
+    response: response.SendLocalListResponse & { action: 'SendLocalList' },
   },
   TriggerMessage: {
-    request: {
-      action: 'TriggerMessage';
-      connectorId?: number;
-      requestedMessage: string;
-    },
-    response: {
-      action: 'TriggerMessage';
-    }
+    request: request.TriggerMessageRequest & { action: 'TriggerMessage' },
+    response: response.TriggerMessageResponse & { action: 'TriggerMessage' },
   },
   UnlockConnector: {
-    request: {
-      action: 'UnlockConnector';
-      connectorId: number
-    },
-    response: {
-      action: 'UnlockConnector';
-    }
+    request: request.UnlockConnectorRequest & { action: 'UnlockConnector' },
+    response: response.UnlockConnectorResponse & { action: 'UnlockConnector' },
   },
   UpdateFirmware: {
-    request: {
-      action: 'UpdateFirmware';
-      location: string;
-      retries?: number;
-      retrieveDate: Timestamp;
-      retryInterval?: number;
-    },
-    response: {
-      action: 'UpdateFirmware';
-    }
+    request: request.UpdateFirmwareRequest & { action: 'UpdateFirmware' },
+    response: response.UpdateFirmwareResponse & { action: 'UpdateFirmware' },
   },
   SetChargingProfile: {
-    request: {
-      action: 'SetChargingProfile';
-      connectorId: number;
-      csChargingProfiles: CentralSystemChargingProfile;
-    },
-    response: {
-      action: 'SetChargingProfile';
-    }
+    request: request.SetChargingProfileRequest & { action: 'SetChargingProfile' },
+    response: response.SetChargingProfileResponse & { action: 'SetChargingProfile' },
   },
 };
 

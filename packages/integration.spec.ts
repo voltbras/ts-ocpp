@@ -51,7 +51,7 @@ describe('test cs<->cp communication', () => {
     let waitCpReqTrigger = (req: Request<CentralSystemAction>) => { }
     const waitCpReq: Promise<Request<CentralSystemAction>> = new Promise(resolve => waitCpReqTrigger = resolve);
 
-    const currentTime = new Date();
+    const currentTime = new Date().toISOString();
     const cs = new CentralSystem(PORT, (req, cpId) => {
       waitCsReqTrigger(req);
       if (req.action === 'Heartbeat') {
@@ -70,7 +70,6 @@ describe('test cs<->cp communication', () => {
             key: 'Test',
             readonly: true,
           }]
-
         }, undefined]
         return [undefined, new Error('123')]
       },
@@ -81,7 +80,7 @@ describe('test cs<->cp communication', () => {
     const csResp = await cp.sendRequest('Heartbeat', {});
 
     expect((await waitCsReq).action).toBe('Heartbeat');
-    expect(csResp.map(resp => resp.currentTime)).toStrictEqual(Right(currentTime.toISOString()));
+    expect(csResp.map(resp => resp.currentTime)).toStrictEqual(Right(currentTime));
 
     const cpResp = await cs.sendRequest('123', 'GetConfiguration', {});
     expect(cpResp.map(resp => resp.configurationKey?.[0].key)).toStrictEqual(Right('Test'));

@@ -3,7 +3,7 @@ import { parseOCPPMessage, stringifyOCPPMessage } from './format';
 import { MessageType, OCPPJMessage } from './types';
 import { ActionName, Request, RequestHandler, Response } from '../messages';
 import { OCPPApplicationError, OCPPRequestError, ValidationError } from '../errors/index';
-import { validateMessage } from '../messages/validation';
+import { validateMessageRequest, validateMessageResponse } from '../messages/validation';
 import * as uuid from 'uuid';
 import { EitherAsync, Left, Right, Just, Nothing, Maybe, MaybeAsync } from 'purify-ts';
 
@@ -16,12 +16,14 @@ export default class Connection<T extends ActionName> {
     private readonly acceptedActions: T[],
   ) { }
 
-  public sendRequest<T extends ActionName>(action: T, payload: Request<T>): EitherAsync<OCPPRequestError, Response<T>> {
+  public sendRequest<T extends ActionName>(action: T, { action: _, ...payload }: Request<T>): EitherAsync<OCPPRequestError, Response<T>> {
     return EitherAsync.fromPromise(async () => {
       const id = uuid.v4();
       const waitResponse: Promise<OCPPJMessage> = new Promise(resolve => {
         this.messageTriggers[id] = resolve;
       });
+      const validateResult = validateMessageResponse(action, payload, this.acceptedActions);
+      if (validateResult.isLeft()) return Left(new OCPPApplicationError(validateResult.extract().toString()))
       await this.sendOCPPMessage({
         id,
         type: MessageType.CALL,
@@ -44,8 +46,9 @@ export default class Connection<T extends ActionName> {
   public handleWebsocketData(data: WebSocket.Data) {
     parseOCPPMessage(data)
       .map(msg => this.handleOCPPMessage(msg))
-      .map(async result =>
+      .map(async result => {
         await result.map(response => this.sendOCPPMessage(response))
+      }
       )
   }
 
@@ -66,7 +69,7 @@ export default class Connection<T extends ActionName> {
       switch (message.type) {
         case MessageType.CALL:
           const response =
-            await EitherAsync.liftEither(validateMessage(message.action, message.payload ?? {}, this.acceptedActions))
+            await EitherAsync.liftEither(validateMessageRequest(message.action, message.payload ?? {}, this.acceptedActions))
               .chain(async request => {
                 const [response, error] = await this.requestHandler(request, undefined);
                 if (error) return Left(new OCPPApplicationError('on handling chargepoint request').wrap(error));

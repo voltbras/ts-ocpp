@@ -1,127 +1,46 @@
-import { Timestamp } from '../types';
-import { DiagnosticsStatus, RegistrationStatus, FirmwareStatus, IdTagInfo, MeterValue, TransactionDataItems } from './common';
+import type * as request from './json/request';
+import type * as response from './json/response';
 
 type ChargePointMessage = {
   Authorize: {
-    request: {
-      action: 'Authorize';
-      idTag: string
-    },
-    response: { 
-      action: 'Authorize';
-      idTagInfo: IdTagInfo
-    }
+    request: request.AuthorizeRequest & { action: 'Authorize' },
+    response: response.AuthorizeResponse & { action: 'Authorize' },
   };
   BootNotification: {
-    request: {
-      action: 'BootNotification';
-      chargeBoxSerialNumber?: string;
-      chargePointModel: string;
-      chargePointSerialNumber?: string;
-      chargePointVendor: string;
-      firmwareVersion?: string;
-      iccid?: string;
-      imsi?: string;
-      meterSerialNumber?: string;
-      meterType?: string;
-    },
-    response: {
-      action: 'BootNotification';
-      currentTime: Timestamp;
-      interval: number;
-      status: RegistrationStatus;
-    }
+    request: request.BootNotificationRequest & { action: 'BootNotification' },
+    response: response.BootNotificationResponse & { action: 'BootNotification' },
   };
   DataTransfer: {
-    request: {
-      action: 'DataTransfer';
-      data: string;
-      messageId?: string;
-      vendorId?: string;
-    },
-    response: {
-      action: 'DataTransfer';
-    }
+    request: request.DataTransferRequest & { action: 'DataTransfer' },
+    response: response.DataTransferResponse & { action: 'DataTransfer' },
   };
   DiagnosticsStatusNotification: {
-    request: {
-      action: 'DiagnosticsStatusNotification';
-      status: DiagnosticsStatus;
-    },
-    response: {
-      action: 'DiagnosticsStatusNotification';
-    }
+    request: request.DiagnosticsStatusNotificationRequest & { action: 'DiagnosticsStatusNotification' },
+    response: response.DiagnosticsStatusNotificationResponse & { action: 'DiagnosticsStatusNotification' },
   };
   FirmwareStatusNotification: {
-    request: {
-      action: 'FirmwareStatusNotification';
-      status: FirmwareStatus;
-    },
-    response: {
-      action: 'FirmwareStatusNotification';
-    }
+    request: request.FirmwareStatusNotificationRequest & { action: 'FirmwareStatusNotification' },
+    response: response.FirmwareStatusNotificationResponse & { action: 'FirmwareStatusNotification' },
   };
   Heartbeat: {
-    request: {
-      action: 'Heartbeat';
-    },
-    response: {
-      action: 'Heartbeat';
-      currentTime: Timestamp;
-    }
+    request: request.HeartbeatRequest & { action: 'Heartbeat' },
+    response: response.HeartbeatResponse & { action: 'Heartbeat' },
   };
   MeterValues: {
-    request: {
-      action: 'MeterValues';
-      connectorId: number;
-      meterValue: MeterValue[];
-      transactionId: number;
-    },
-    response: {
-      action: 'MeterValues';
-    }
+    request: request.MeterValuesRequest & { action: 'MeterValues' },
+    response: response.MeterValuesResponse & { action: 'MeterValues' },
   };
   StartTransaction: {
-    request: {
-      action: 'StartTransaction';
-      connectorId: number;
-      idTag: string;
-      meterStart: number;
-      reservationId?: number;
-      timestamp: Timestamp; // TODO: maybe string?
-    },
-    response: {
-      action: 'StartTransaction';
-    }
+    request: request.StartTransactionRequest & { action: 'StartTransaction' },
+    response: response.StartTransactionResponse & { action: 'StartTransaction' },
   };
   StatusNotification: {
-    request: {
-      action: 'StatusNotification';
-      connectorId: number;
-      errorCode: string; // TODO: cpstatus
-      info?: string;
-      status: string;
-      timestamp?: Timestamp;
-      vendorErrorCode?: string;
-      vendorId?: string;
-    },
-    response: {
-      action: 'StatusNotification';
-    }
+    request: request.StatusNotificationRequest & { action: 'StatusNotification' },
+    response: response.StatusNotificationResponse & { action: 'StatusNotification' },
   };
   StopTransaction: {
-    request: {
-      action: 'StopTransaction';
-      idTag?: string;
-      meterStop: number;
-      reason?: string;
-      timestamp: Timestamp;
-      transactionData?: TransactionDataItems[];
-      transactionId: number;
-    },
-    response: {
-      action: 'StopTransaction';
-    }
+    request: request.StopTransactionRequest & { action: 'StopTransaction' },
+    response: response.StopTransactionResponse & { action: 'StopTransaction' },
   };
 }
 export type ChargePointAction = keyof ChargePointMessage;
