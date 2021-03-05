@@ -8,12 +8,13 @@ import * as uuid from 'uuid';
 import { EitherAsync, Left, Right, Just, Nothing, Maybe, MaybeAsync } from 'purify-ts';
 
 
-export default class Connection<T extends ActionName> {
+export default class Connection<ReqAction extends ActionName> {
   private messageTriggers: Record<string, (m: OCPPJMessage) => void> = {};
   constructor(
     private readonly socket: WebSocket,
-    private readonly requestHandler: RequestHandler<T>,
-    private readonly acceptedActions: T[],
+    private readonly requestHandler: RequestHandler<ReqAction>,
+    private readonly requestedActions: ReqAction[],
+    private readonly respondedActions: ActionName[],
   ) { }
 
   public sendRequest<T extends ActionName>(action: T, { action: _, ...payload }: Request<T>): EitherAsync<OCPPRequestError, Response<T>> {
@@ -22,8 +23,10 @@ export default class Connection<T extends ActionName> {
       const waitResponse: Promise<OCPPJMessage> = new Promise(resolve => {
         this.messageTriggers[id] = resolve;
       });
-      const validateResult = validateMessageResponse(action, payload, this.acceptedActions);
-      if (validateResult.isLeft()) return Left(new OCPPApplicationError(validateResult.extract().toString()))
+      const validateResult = validateMessageRequest(action, payload, this.respondedActions);
+      if (validateResult.isLeft())
+        return Left(new OCPPApplicationError(validateResult.extract().toString()))
+
       await this.sendOCPPMessage({
         id,
         type: MessageType.CALL,
@@ -69,7 +72,7 @@ export default class Connection<T extends ActionName> {
       switch (message.type) {
         case MessageType.CALL:
           const response =
-            await EitherAsync.liftEither(validateMessageRequest(message.action, message.payload ?? {}, this.acceptedActions))
+            await EitherAsync.liftEither(validateMessageRequest(message.action, message.payload ?? {}, this.requestedActions))
               .chain(async request => {
                 const [response, error] = await this.requestHandler(request, undefined);
                 if (error) return Left(new OCPPApplicationError('on handling chargepoint request').wrap(error));

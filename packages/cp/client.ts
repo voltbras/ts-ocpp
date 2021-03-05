@@ -2,7 +2,7 @@ import { Request, RequestHandler, Response } from '../messages';
 import { CentralSystemAction, centralSystemActions } from '../messages/cs';
 import WebSocket from 'ws';
 import { Connection, SUPPORTED_PROTOCOLS } from '../ws';
-import { ChargePointAction } from '../messages/cp';
+import { ChargePointAction, chargePointActions } from '../messages/cp';
 import { EitherAsync, Left } from 'purify-ts';
 import { OCPPRequestError } from '../errors';
 
@@ -22,7 +22,8 @@ export default class ChargePoint {
     this.connection = new Connection<CentralSystemAction>(
       socket,
       this.requestHandler,
-      centralSystemActions
+      centralSystemActions,
+      chargePointActions,
     );
     // this.socket.on('close', () => (this.socket = undefined));
     socket.on('error', console.error);

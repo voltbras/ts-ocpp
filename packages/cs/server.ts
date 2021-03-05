@@ -3,7 +3,7 @@ import { IncomingMessage } from 'http';
 import { Request, RequestHandler, Response } from '../messages';
 import { ChargePointAction, chargePointActions } from '../messages/cp';
 import { Connection, SUPPORTED_PROTOCOLS } from '../ws';
-import { CentralSystemAction } from '../messages/cs';
+import { CentralSystemAction, centralSystemActions } from '../messages/cs';
 import { OCPPRequestError } from '../errors';
 import { EitherAsync, Left } from 'purify-ts';
 
@@ -78,7 +78,8 @@ export default class CentralSystem {
     const connection = new Connection(
       socket,
       (request) => this.cpHandler(request, { chargePointId: cpId }),
-      chargePointActions
+      chargePointActions,
+      centralSystemActions,
     );
     this.connections[cpId] = connection;
 
