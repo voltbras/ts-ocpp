@@ -3,11 +3,11 @@ import { parseOCPPMessage, stringifyOCPPMessage } from './format';
 
 describe('ws', () => {
   it('should throw on invalid messages', () => {
-    expect(parseOCPPMessage('').isFail()).toBeTruthy()
-    expect(parseOCPPMessage('[]').isFail()).toBeTruthy()
-    expect(parseOCPPMessage('[123]').isFail()).toBeTruthy()
-    expect(parseOCPPMessage('["2"]').isFail()).toBeTruthy()
-    expect(parseOCPPMessage('["2", "123", "BootNotification", {}]').isFail()).toBeTruthy()
+    expect(parseOCPPMessage('').isLeft()).toBeTruthy()
+    expect(parseOCPPMessage('[]').isLeft()).toBeTruthy()
+    expect(parseOCPPMessage('[123]').isLeft()).toBeTruthy()
+    expect(parseOCPPMessage('["2"]').isLeft()).toBeTruthy()
+    expect(parseOCPPMessage('["2", "123", "BootNotification", {}]').isLeft()).toBeTruthy()
   })
 
   const messagesFixtures: Array<[string, OCPPJMessage]> = [
@@ -34,7 +34,7 @@ describe('ws', () => {
     (
       'should work on valid messages %s',
       (raw, expected) => {
-        const parsed = parseOCPPMessage(raw).success();
+        const parsed = parseOCPPMessage(raw).unsafeCoerce();
         expect(parsed).toStrictEqual(expected)
         const stringified = stringifyOCPPMessage(parsed);
         expect(stringified).toBe(raw);

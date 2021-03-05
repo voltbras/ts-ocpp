@@ -3,6 +3,7 @@ import { ChargePoint } from './cp';
 import { ChargePointAction } from './messages/cp';
 import { Request } from './messages';
 import { CentralSystemAction } from './messages/cs';
+import { Right } from 'purify-ts';
 
 describe('test cs<->cp communication', () => {
   const PORT = 8080;
@@ -11,9 +12,9 @@ describe('test cs<->cp communication', () => {
     cp.close();
     cs.close();
   });
-  
+
   const connect = async (cp: ChargePoint, cs: CentralSystem) => {
-    let triggerConnected = (cpId: string) => {};
+    let triggerConnected = (cpId: string) => { };
     cs.addConnectionListener((cpId, status) => {
       if (status === 'connected') triggerConnected(cpId);
     });
@@ -35,7 +36,7 @@ describe('test cs<->cp communication', () => {
 
   const cp = new ChargePoint(
     '123',
-    () => [undefined, new Error('123')],  
+    () => [undefined, new Error('123')],
     `ws://localhost:${PORT}`
   );
 
@@ -44,10 +45,10 @@ describe('test cs<->cp communication', () => {
   });
 
   it('should send message', async () => {
-    let waitCsReqTrigger = (req: Request<ChargePointAction>) => {}
+    let waitCsReqTrigger = (req: Request<ChargePointAction>) => { }
     const waitCsReq: Promise<Request<ChargePointAction>> = new Promise(resolve => waitCsReqTrigger = resolve);
-    
-    let waitCpReqTrigger = (req: Request<CentralSystemAction>) => {}
+
+    let waitCpReqTrigger = (req: Request<CentralSystemAction>) => { }
     const waitCpReq: Promise<Request<CentralSystemAction>> = new Promise(resolve => waitCpReqTrigger = resolve);
 
     const currentTime = new Date();
@@ -80,10 +81,10 @@ describe('test cs<->cp communication', () => {
     const csResp = await cp.sendRequest('Heartbeat', {});
 
     expect((await waitCsReq).action).toBe('Heartbeat');
-    expect(csResp.success().currentTime).toBe(currentTime.toISOString());
+    expect(csResp.map(resp => resp.currentTime)).toStrictEqual(Right(currentTime.toISOString()));
 
     const cpResp = await cs.sendRequest('123', 'GetConfiguration', {});
-    expect(cpResp.success()?.configurationKey?.[0].key).toBe('Test');
+    expect(cpResp.map(resp => resp.configurationKey?.[0].key)).toStrictEqual(Right('Test'));
 
     cs.close();
   });

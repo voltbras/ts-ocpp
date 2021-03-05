@@ -1,14 +1,14 @@
-import { Fail, Success, Validation } from 'monet';
 import { ValidationError } from '../errors';
 import { ActionName, Request } from '.';
+import { Either, Left, Right } from 'purify-ts';
 
 // TODO: proper validation
-export const validateMessage = <T extends ActionName>(action: string, body: object, acceptedActions: T[]): Validation<ValidationError, Request<T>> => {
+export const validateMessage = <T extends ActionName>(action: string, body: object, acceptedActions: T[]): Either<ValidationError, Request<T>> => {
   if (!acceptedActions.includes(action as T))
-    return Fail(new ValidationError('action is not valid'));
+    return Left(new ValidationError('action is not valid'));
 
   // @ts-ignore
-  return Success({
+  return Right({
     action,
     ...body
   });

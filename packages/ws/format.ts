@@ -1,10 +1,10 @@
 import { MessageType, OCPPJMessage, OCPPJRawMessage } from './types';
-import { Validation, Fail, Success } from 'monet';
 import { ValidationError } from '../errors';
+import { Either, Left, Right } from 'purify-ts';
 
-export const parseOCPPMessage = (raw: OCPPJRawMessage): Validation<ValidationError, OCPPJMessage> => {
+export const parseOCPPMessage = (raw: OCPPJRawMessage): Either<ValidationError, OCPPJMessage> => {
   try {
-    if (typeof raw !== 'string') return Fail(new ValidationError('only string is supported'));
+    if (typeof raw !== 'string') return Left(new ValidationError('only string is supported'));
 
     const [
       type,
@@ -14,7 +14,7 @@ export const parseOCPPMessage = (raw: OCPPJRawMessage): Validation<ValidationErr
     switch (type as MessageType) {
       case MessageType.CALL: {
         const [action, payload] = rest;
-        return Success({
+        return Right({
           type: MessageType.CALL,
           id,
           action,
@@ -23,7 +23,7 @@ export const parseOCPPMessage = (raw: OCPPJRawMessage): Validation<ValidationErr
       }
       case MessageType.CALLRESULT: {
         const [payload] = rest;
-        return Success({
+        return Right({
           type: MessageType.CALLRESULT,
           id,
           ...(payload ? { payload } : {})
@@ -31,7 +31,7 @@ export const parseOCPPMessage = (raw: OCPPJRawMessage): Validation<ValidationErr
       }
       case MessageType.CALLERROR: {
         const [errorCode, errorDescription, errorDetails] = rest;
-        return Success({
+        return Right({
           type: MessageType.CALLERROR,
           id,
           errorCode,
@@ -39,10 +39,10 @@ export const parseOCPPMessage = (raw: OCPPJRawMessage): Validation<ValidationErr
           ...(errorDetails ? { errorDetails } : {}),
         });
       }
-      default: return Fail(new ValidationError(`Not supported message type: ${type}`));
+      default: return Left(new ValidationError(`Not supported message type: ${type}`));
     }
   } catch (err) {
-    return Fail(new ValidationError(`An error occurred when trying to parse message: "${raw}"`).wrap(err))
+    return Left(new ValidationError(`An error occurred when trying to parse message: "${raw}"`).wrap(err))
   }
 };
 

@@ -555,6 +555,11 @@
     jest-diff "^26.0.0"
     pretty-format "^26.0.0"
 
+"@types/json-schema@^7.0.4":
+  version "7.0.7"
+  resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.7.tgz#98a993516c859eb0d5c4c8f098317a9ea68db9ad"
+  integrity sha512-cxWFQVseBm6O9Gbw1IWb8r6OS4OhSt3hPZLkFApLjM8TEXROBuQGLAH2i2gZpcXdLBIrpXuTDhH7Vbm1iXmNGA==
+
 "@types/node@*":
   version "14.14.6"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.6.tgz#146d3da57b3c636cc0d1769396ce1cfa8991147f"
@@ -2501,11 +2506,6 @@ mkdirp@1.x:
   resolved "https://registry.yarnpkg.com/mkdirp/-/mkdirp-1.0.4.tgz#3eb5ed62622756d79a5f0e2a221dfebad75c2f7e"
   integrity sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==
 
-monet@^0.9.1:
-  version "0.9.1"
-  resolved "https://registry.yarnpkg.com/monet/-/monet-0.9.1.tgz#89686a22d9dd8a6228fcde5265fcd86aa63981a7"
-  integrity sha512-GaZw308g6t0WD+U2mGujwJckGp2b8AGGVuB6PiIwkXbq6rJeiqddre2mdbO4PxjyILPi+7GgtRkkfr6dBYXWtA==
-
 ms@2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
@@ -2803,6 +2803,13 @@ punycode@^2.1.0, punycode@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
+
+purify-ts@^0.16.1:
+  version "0.16.1"
+  resolved "https://registry.yarnpkg.com/purify-ts/-/purify-ts-0.16.1.tgz#45c8ac5e131afb24180ef604c233671b182adf20"
+  integrity sha512-BX0Su8dRitLCDcgf8hxsAdr2BVWdf/C4ObVn2tPx6n6r4ys9IqDidaAWXUgqT/EHe5+9Z+uaZnQ/x4xxiMzQRw==
+  dependencies:
+    "@types/json-schema" "^7.0.4"
 
 qs@~6.5.2:
   version "6.5.2"
