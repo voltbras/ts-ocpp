@@ -8,16 +8,16 @@ import * as uuid from 'uuid';
 import { EitherAsync, Left, Right, Just, Nothing, Maybe, MaybeAsync } from 'purify-ts';
 
 
-export default class Connection<ReqAction extends ActionName> {
+export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
   private messageTriggers: Record<string, (m: OCPPJMessage) => void> = {};
   constructor(
     private readonly socket: WebSocket,
-    private readonly requestHandler: RequestHandler<ReqAction>,
+    private readonly requestHandler: RequestHandler<ReqAction, undefined, 'v1.6-json'>,
     private readonly requestedActions: ReqAction[],
-    private readonly respondedActions: ActionName[],
+    private readonly respondedActions: ActionName<'v1.6-json'>[],
   ) { }
 
-  public sendRequest<T extends ActionName>(action: T, { action: _, ...payload }: Request<T>): EitherAsync<OCPPRequestError, Response<T>> {
+  public sendRequest<T extends ActionName<'v1.6-json'>>(action: T, { action: _, ocppVersion: __, ...payload }: Request<T, 'v1.6-json'>): EitherAsync<OCPPRequestError, Response<T, 'v1.6-json'>> {
     return EitherAsync.fromPromise(async () => {
       const id = uuid.v4();
       const waitResponse: Promise<OCPPJMessage> = new Promise(resolve => {
@@ -42,7 +42,7 @@ export default class Connection<ReqAction extends ActionName> {
         new OCPPRequestError('other side responded with error', message.errorCode, message.errorDescription, message.errorDetails)
       );
 
-      return Right(message.payload as Response<T>);
+      return Right(message.payload as Response<T, 'v1.6-json'>);
     })
   }
 
@@ -74,9 +74,12 @@ export default class Connection<ReqAction extends ActionName> {
           const response =
             await EitherAsync.liftEither(validateMessageRequest(message.action, message.payload ?? {}, this.requestedActions))
               .chain(async request => {
-                const [response, error] = await this.requestHandler(request, undefined);
-                if (error) return Left(new OCPPApplicationError('on handling chargepoint request').wrap(error));
-                return Right(response!);
+                try {
+                  const response = await this.requestHandler(request, undefined);
+                  return Right(response);
+                } catch (error) {
+                  return Left(new OCPPApplicationError('on handling chargepoint request').wrap(error));
+                }
               });
 
           const formattedResponse =
@@ -89,8 +92,8 @@ export default class Connection<ReqAction extends ActionName> {
                 errorDescription: `[${fail.name}] ${fail.message}`,
                 errorDetails: fail,
               }),
-                // remove action from payload
-                ({ action, ...payload }) => ({
+                // remove action and ocpp version from payload
+                ({ action, ocppVersion, ...payload }) => ({
                   type: MessageType.CALLRESULT,
                   id: message.id,
                   payload,

@@ -31,12 +31,12 @@ describe('test cs<->cp communication', () => {
   }
 
   const cs = new CentralSystem(PORT, (req, cpId) => {
-    return [undefined, new Error('cs')];
+    throw new Error('cs');
   });
 
   const cp = new ChargePoint(
     '123',
-    () => [undefined, new Error('123')],
+    () => { throw new Error('123') },
     `ws://localhost:${PORT}`
   );
 
@@ -45,44 +45,50 @@ describe('test cs<->cp communication', () => {
   });
 
   it('should send message', async () => {
-    let waitCsReqTrigger = (req: Request<ChargePointAction>) => { }
-    const waitCsReq: Promise<Request<ChargePointAction>> = new Promise(resolve => waitCsReqTrigger = resolve);
+    let waitCsReqTrigger = (req: Request<ChargePointAction, 'v1.6-json'>) => { }
+    const waitCsReq: Promise<Request<ChargePointAction, 'v1.6-json'>> = new Promise(resolve => waitCsReqTrigger = resolve);
 
-    let waitCpReqTrigger = (req: Request<CentralSystemAction>) => { }
-    const waitCpReq: Promise<Request<CentralSystemAction>> = new Promise(resolve => waitCpReqTrigger = resolve);
+    let waitCpReqTrigger = (req: Request<CentralSystemAction, 'v1.6-json'>) => { }
+    const waitCpReq: Promise<Request<CentralSystemAction, 'v1.6-json'>> = new Promise(resolve => waitCpReqTrigger = resolve);
 
     const currentTime = new Date().toISOString();
-    const cs = new CentralSystem(PORT, (req, cpId) => {
-      waitCsReqTrigger(req);
+    const cs = new CentralSystem(PORT, (req, { chargePointId }) => {
+      waitCsReqTrigger(req as Request<ChargePointAction, 'v1.6-json'>);
       if (req.action === 'Heartbeat') {
-        return [{ action: 'Heartbeat', currentTime }, undefined];
+        return { action: 'Heartbeat', ocppVersion: 'v1.6-json', currentTime };
       }
-      return [undefined, new Error('message not supported')];
+      throw new Error('message not supported');
     });
 
     const cp = new ChargePoint(
       '123',
       req => {
-        waitCpReqTrigger(req);
-        if (req.action === 'GetConfiguration') return [{
+        waitCpReqTrigger(req as Request<CentralSystemAction, 'v1.6-json'>);
+        if (req.action === 'GetConfiguration') return {
           action: 'GetConfiguration',
+          ocppVersion: 'v1.6-json',
           configurationKey: [{
             key: 'Test',
             readonly: true,
           }]
-        }, undefined]
-        return [undefined, new Error('123')]
+        }
+        throw new Error('123');
       },
       `ws://localhost:${PORT}`
     );
 
     await connect(cp, cs);
-    const csResp = await cp.sendRequest('Heartbeat', {});
+    const csResp = await cp.sendRequest({ ocppVersion: 'v1.6-json', action: 'Heartbeat', payload: {} });
 
     expect((await waitCsReq).action).toBe('Heartbeat');
     expect(csResp.map(resp => resp.currentTime)).toStrictEqual(Right(currentTime));
 
-    const cpResp = await cs.sendRequest('123', 'GetConfiguration', {});
+    const cpResp = await cs.sendRequest({
+      action: 'GetConfiguration',
+      chargePointId: '123',
+      ocppVersion: 'v1.6-json',
+      payload: {},
+    });
     expect(cpResp.map(resp => resp.configurationKey?.[0].key)).toStrictEqual(Right('Test'));
 
     cs.close();

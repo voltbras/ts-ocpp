@@ -3,19 +3,22 @@
     "outDir": "dist",
     "module": "commonjs",
     "lib": [
-      "es2018"
+      "es2019"
     ],
     "declaration": true,
     "target": "es2018",
     "sourceMap": true,
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true,
   },
   "include": [
-    "packages/**/*"
+    "packages/**/*",
+    "examples/index.ts"
   ],
   "exclude": [
     "node_modules",
-    "**/*.spec.ts"
+    "**/*.spec.ts",
+    "examples"
   ]
 }

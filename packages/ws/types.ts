@@ -23,7 +23,7 @@ export type OCPPJMessage =
   { id: string } & (
     | {
       type: MessageType.CALL;
-      action: ActionName;
+      action: ActionName<'v1.6-json'>;
       payload?: object;
     }
     | {

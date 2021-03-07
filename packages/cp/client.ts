@@ -5,13 +5,27 @@ import { Connection, SUPPORTED_PROTOCOLS } from '../ws';
 import { ChargePointAction, chargePointActions } from '../messages/cp';
 import { EitherAsync, Left } from 'purify-ts';
 import { OCPPRequestError } from '../errors';
+import { OCPPVersion } from '../types';
+
+export type SendRequestArgs<T extends ChargePointAction<V>, V extends OCPPVersion> = {
+  ocppVersion: 'v1.6-json',
+  payload: Omit<Request<T, V>, 'action' | 'ocppVersion'>,
+  action: T,
+};
+// | {
+//   ocppVersion: 'v1.5-soap',
+//   chargePointUrl: string,
+//   chargePointId: string,
+//   payload: Omit<Request<T, V>, 'action' | 'ocppVersion'>,
+//   action: T,
+// };
 
 export default class ChargePoint {
-  private connection?: Connection<CentralSystemAction>;
+  private connection?: Connection<CentralSystemAction<'v1.6-json'>>;
 
   constructor(
     private readonly cpId: string,
-    private readonly requestHandler: RequestHandler<CentralSystemAction>,
+    private readonly requestHandler: RequestHandler<CentralSystemAction<'v1.6-json'>, undefined, 'v1.6-json'>,
     private readonly csUrl: string
   ) { }
 
@@ -19,7 +33,7 @@ export default class ChargePoint {
     const url = `${this.csUrl}/${this.cpId}`;
     const socket = new WebSocket(url, SUPPORTED_PROTOCOLS);
 
-    this.connection = new Connection<CentralSystemAction>(
+    this.connection = new Connection(
       socket,
       this.requestHandler,
       centralSystemActions,
@@ -34,12 +48,15 @@ export default class ChargePoint {
     });
   }
 
-  sendRequest<T extends ChargePointAction>(action: T, payload: Omit<Request<T>, 'action'>): EitherAsync<OCPPRequestError, Response<T>> {
+  sendRequest<T extends ChargePointAction>(args: SendRequestArgs<T, 'v1.6-json'>): EitherAsync<OCPPRequestError, Response<T>> {
     return EitherAsync.fromPromise(async () => {
       if (!this.connection) return Left(new OCPPRequestError('there is no connection to the central system'));
-      // @ts-ignore - TS somehow doesn't understand that this is right
-      const request: Request<T> = { ...payload, action };
-      return await this.connection.sendRequest(action, request);
+      const request = {
+        ...args.payload,
+        action: args.action,
+        ocppVersion: args.ocppVersion
+      } as Request<T, 'v1.6-json'>;
+      return await this.connection.sendRequest(args.action, request);
     })
   }
 
