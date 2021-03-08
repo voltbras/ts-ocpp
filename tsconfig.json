@@ -13,8 +13,7 @@
     "skipLibCheck": true,
   },
   "include": [
-    "packages/**/*",
-    "examples/index.ts"
+    "packages/**/*"
   ],
   "exclude": [
     "node_modules",

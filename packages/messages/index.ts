@@ -9,7 +9,7 @@ export type ReqRes<T extends ActionName<V>, V extends OCPPVersion = OCPPVersion>
   ? ChargePointMessage<V>[T]
   : T extends CentralSystemAction<V>
   ? CentralSystemMessage<V>[T]
-  : { request: 3 };
+  : never;
 
 // @ts-ignore, TS somehow doesn't recognize that there is a request property
 export type Request<T extends ActionName<V>, V extends OCPPVersion = OCPPVersion> = ReqRes<T, V>['request'];
