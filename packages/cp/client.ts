@@ -7,7 +7,7 @@ import { EitherAsync, Left } from 'purify-ts';
 import { OCPPRequestError } from '../errors';
 import { OCPPVersion } from '../types';
 
-export type SendRequestArgs<T extends ChargePointAction<V>, V extends OCPPVersion> = {
+export type CPSendRequestArgs<T extends ChargePointAction<V>, V extends OCPPVersion> = {
   ocppVersion: 'v1.6-json',
   payload: Omit<Request<T, V>, 'action' | 'ocppVersion'>,
   action: T,
@@ -48,7 +48,7 @@ export default class ChargePoint {
     });
   }
 
-  sendRequest<T extends ChargePointAction>(args: SendRequestArgs<T, 'v1.6-json'>): EitherAsync<OCPPRequestError, Response<T>> {
+  sendRequest<T extends ChargePointAction>(args: CPSendRequestArgs<T, 'v1.6-json'>): EitherAsync<OCPPRequestError, Response<T>> {
     return EitherAsync.fromPromise(async () => {
       if (!this.connection) return Left(new OCPPRequestError('there is no connection to the central system'));
       const request = {

@@ -23,7 +23,7 @@ type ConnectionListener = (
 
 type RequestMetadata = { chargePointId: string };
 
-export type SendRequestArgs<T extends CentralSystemAction<V>, V extends OCPPVersion> = {
+export type CSSendRequestArgs<T extends CentralSystemAction<V>, V extends OCPPVersion> = {
   ocppVersion: 'v1.6-json',
   chargePointId: string,
   payload: Omit<Request<T, V>, 'action' | 'ocppVersion'>,
@@ -91,7 +91,7 @@ export default class CentralSystem {
     this.websocketsServer.close();
   }
 
-  sendRequest<V extends OCPPVersion, T extends CentralSystemAction>(args: SendRequestArgs<T, V>): EitherAsync<OCPPRequestError, Response<T, V>> {
+  sendRequest<V extends OCPPVersion, T extends CentralSystemAction>(args: CSSendRequestArgs<T, V>): EitherAsync<OCPPRequestError, Response<T, V>> {
     return EitherAsync.fromPromise(async () => {
       const { chargePointId, payload, action } = args;
       if (!chargePointId) return Left(new OCPPRequestError('charge point id was not provided'));
