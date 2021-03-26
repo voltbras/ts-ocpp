@@ -4,7 +4,6 @@
     "src/messages/**/*.ts",
     "src/soap/**/*.ts",
     "src/ws/**/*.ts",
-    "src/cs/**/*.ts",
     "**/*.spec.ts",
     "src/types.ts",
     "src/index.ts"

@@ -15,7 +15,7 @@
     "copy-assets-wsdl": "cp ./packages/messages/soap/*.wsdl ./dist/messages/soap",
     "copy-assets-jsonschema": "cp -R ./packages/messages/json ./dist/messages/json",
     "prepare": "npm run build",
-    "prepublishOnly": "npm test",
+    "prepublishOnly": "npm test && yarn docs-ts",
     "postversion": "git push && git push --tags"
   },
   "dependencies": {

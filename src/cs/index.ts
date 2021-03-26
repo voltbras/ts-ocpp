@@ -1,3 +1,6 @@
+/**
+ * Sets up a central system, that can communicate with charge points
+ */
 import WebSocket from 'ws';
 import { IncomingMessage, createServer, Server } from 'http';
 import { ActionName, Request, RequestHandler, Response } from '../messages';
@@ -36,7 +39,29 @@ export type CSSendRequestArgs<T extends CentralSystemAction<V>, V extends OCPPVe
   action: T,
 };
 
-
+/**
+ * Represents the central system, can communicate with charge points
+ *
+ * @example
+ * import { CentralSystem } from '@voltbras/ts-ocpp';
+ *
+ * // port and request handler as arguments
+ * const centralSystem = new CentralSystem(3000, (req, { chargePointId }) => {
+ *   switch (req.action) {
+ *     case 'Heartbeat':
+ *       // returns a successful response
+ *       // (we pass the action and ocpp version so typescript knows which fields are needed)
+ *       return {
+ *         action: req.action,
+ *         ocppVersion: req.ocppVersion,
+ *         currentTime: new Date().toISOString()
+ *       };
+ *   }
+ *   throw new Error('message not supported');
+ * });
+ * 
+ * @category Central System
+ */
 export default class CentralSystem {
   private cpHandler: RequestHandler<ChargePointAction, RequestMetadata>;
   private connections: Record<string, Connection<ChargePointAction>> = {};
@@ -56,30 +81,6 @@ export default class CentralSystem {
 
     this.setupSoapServer();
     this.websocketsServer = this.setupWebsocketsServer();
-  }
-
-  private setupSoapServer() {
-    const services: IServices = {
-      CentralSystemService: {
-        CentralSystemServiceSoap12: Object.fromEntries(
-          chargePointActions.map(
-            action => [action, this.getSoapHandler(action)]
-          )
-        )
-      }
-    };
-    const xml = fs.readFileSync(path.resolve(__dirname, '../messages/soap/ocpp_centralsystemservice_1.5_final.wsdl'), 'utf8');
-    soap.listen(this.httpServer, { services, path: '/', xml });
-  }
-
-  private setupWebsocketsServer(): WebSocket.Server {
-    const server = new WebSocket.Server({ server: this.httpServer, handleProtocols });
-    server.on('error', console.error);
-    server.on('upgrade', console.info);
-    server.on('connection', (socket, request) =>
-      this.handleConnection(socket, request)
-    );
-    return server;
   }
 
   public addConnectionListener(listener: ConnectionListener) {
@@ -121,6 +122,33 @@ export default class CentralSystem {
     })
   }
 
+  /** @internal */
+  private setupSoapServer() {
+    const services: IServices = {
+      CentralSystemService: {
+        CentralSystemServiceSoap12: Object.fromEntries(
+          chargePointActions.map(
+            action => [action, this.getSoapHandler(action)]
+          )
+        )
+      }
+    };
+    const xml = fs.readFileSync(path.resolve(__dirname, '../messages/soap/ocpp_centralsystemservice_1.5_final.wsdl'), 'utf8');
+    soap.listen(this.httpServer, { services, path: '/', xml });
+  }
+
+  /** @internal */
+  private setupWebsocketsServer(): WebSocket.Server {
+    const server = new WebSocket.Server({ server: this.httpServer, handleProtocols });
+    server.on('error', console.error);
+    server.on('upgrade', console.info);
+    server.on('connection', (socket, request) =>
+      this.handleConnection(socket, request)
+    );
+    return server;
+  }
+
+  /** @internal */
   private getSoapHandler(action: ActionName): ISoapServiceMethod {
     return async (request, respond, headers) => {
       const chargePointId = headers.chargeBoxIdentity;
@@ -136,6 +164,7 @@ export default class CentralSystem {
     }
   }
 
+  /** @internal */
   private handleConnection(socket: WebSocket, request: IncomingMessage) {
     if (!socket.protocol) {
       socket.close();
