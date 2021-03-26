@@ -1,5 +1,5 @@
-import { CentralSystem } from './cs';
-import { ChargePoint } from './cp';
+import CentralSystem from './cs';
+import ChargePoint from './cp';
 import { ChargePointAction } from './messages/cp';
 import { Request } from './messages';
 import { CentralSystemAction } from './messages/cs';
