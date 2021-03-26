@@ -1,4 +1,4 @@
-import CentralSystem from '../packages/cs/server';
+import CentralSystem from '../src/cs/server';
 
 const cs = new CentralSystem(8080, (req, { chargePointId }) => {
   const { ocppVersion } = req;

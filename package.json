@@ -12,8 +12,8 @@
     "test": "jest",
     "build": "tsc && npm run copy-assets",
     "copy-assets": "npm run copy-assets-wsdl && npm run copy-assets-jsonschema",
-    "copy-assets-wsdl": "cp ./packages/messages/soap/*.wsdl ./dist/messages/soap",
-    "copy-assets-jsonschema": "cp -R ./packages/messages/json ./dist/messages/json",
+    "copy-assets-wsdl": "cp ./src/messages/soap/*.wsdl ./dist/messages/soap",
+    "copy-assets-jsonschema": "cp -R ./src/messages/json ./dist/messages/json",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && yarn docs-ts",
     "postversion": "git push && git push --tags"

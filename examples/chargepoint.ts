@@ -1,4 +1,4 @@
-import { ChargePoint } from '../packages/cp';
+import { ChargePoint } from '../src/cp';
 
 if (!process.env.STATION_ID || !process.env.CENTRAL_SYSTEM_URL)
   throw new Error('pass STATION_ID and CENTRAL_SYSTEM_URL environment variables');
