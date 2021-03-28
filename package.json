@@ -16,7 +16,8 @@
     "copy-assets-jsonschema": "cp -R ./src/messages/json ./dist/messages/json",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && yarn docs-ts",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "lint": "eslint . --ext .js,.ts"
   },
   "dependencies": {
     "jsonschema": "^1.4.0",
@@ -29,7 +30,10 @@
     "@types/jest": "^26.0.20",
     "@types/uuid": "^8.3.0",
     "@types/ws": "^7.4.0",
+    "@typescript-eslint/eslint-plugin": "^4.19.0",
+    "@typescript-eslint/parser": "^4.19.0",
     "docs-ts": "^0.6.9",
+    "eslint": "^7.23.0",
     "jest": "^26.6.3",
     "prettier": "^2.2.1",
     "ts-jest": "^26.4.4",

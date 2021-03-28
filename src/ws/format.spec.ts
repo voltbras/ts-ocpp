@@ -30,8 +30,7 @@ describe('ws', () => {
   ];
 
   test
-    .each(messagesFixtures)
-    (
+    .each(messagesFixtures)(
       'should work on valid messages %s',
       (raw, expected) => {
         const parsed = parseOCPPMessage(raw).unsafeCoerce();
