@@ -55,16 +55,16 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
       )
   }
 
+  public close() {
+    this.socket.close();
+  }
+
   private async sendOCPPMessage(message: OCPPJMessage): Promise<void> {
     return new Promise((resolve, reject) => {
       this.socket.send(stringifyOCPPMessage(message), err => {
         err ? reject(err) : resolve()
       })
     })
-  }
-
-  public close() {
-    this.socket.close();
   }
 
   private handleOCPPMessage(message: OCPPJMessage): MaybeAsync<OCPPJMessage> {
