@@ -16,7 +16,8 @@
     "copy-assets-jsonschema": "cp -R ./src/messages/json ./dist/messages/json",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && yarn docs-ts",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "lint": "eslint . --ext .js,.ts"
   },
   "dependencies": {
     "jsonschema": "^1.4.0",
