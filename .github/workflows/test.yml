@@ -24,5 +24,8 @@ jobs:
       - name: Install dependencies
         uses: bahmutov/npm-install@v1
 
+      - name: Run ESLint
+        run: yarn lint
+
       - name: Run Jest
         run: yarn test --coverage
