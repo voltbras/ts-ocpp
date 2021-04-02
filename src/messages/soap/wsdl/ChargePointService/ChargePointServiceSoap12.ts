@@ -49,7 +49,7 @@ export interface IGetDiagnosticsOutput {
     fileName: string;
 }
 
-export interface IClearCacheInput {}
+export interface IClearCacheInput { }
 
 export interface IClearCacheOutput {
     /** urn://Ocpp/Cp/2012/06/#ClearCacheStatus(Accepted,Rejected) */
@@ -67,7 +67,7 @@ export interface IUpdateFirmwareInput {
     retryInterval: number;
 }
 
-export interface IUpdateFirmwareOutput {}
+export interface IUpdateFirmwareOutput { }
 
 export interface IChangeConfigurationInput {
     /** urn://Ocpp/Cp/2012/06/#s:string(undefined) */
@@ -140,7 +140,7 @@ export interface IGetConfigurationOutput {
     unknownKey: string;
 }
 
-export interface IGetLocalListVersionInput {}
+export interface IGetLocalListVersionInput { }
 
 export interface IGetLocalListVersionOutput {
     /** urn://Ocpp/Cp/2012/06/#s:int(undefined) */
@@ -183,21 +183,21 @@ export interface ISendLocalListOutput {
 }
 
 export interface IChargePointServiceSoap12Soap {
-    UnlockConnector: (input: IUnlockConnectorInput, cb: (err: any | null, result: IUnlockConnectorOutput, raw: string,  soapHeader: {[k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
-    Reset: (input: IResetInput, cb: (err: any | null, result: IResetOutput, raw: string,  soapHeader: {[k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
-    ChangeAvailability: (input: IChangeAvailabilityInput, cb: (err: any | null, result: IChangeAvailabilityOutput, raw: string,  soapHeader: {[k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
-    GetDiagnostics: (input: IGetDiagnosticsInput, cb: (err: any | null, result: IGetDiagnosticsOutput, raw: string,  soapHeader: {[k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
-    ClearCache: (input: IClearCacheInput, cb: (err: any | null, result: IClearCacheOutput, raw: string,  soapHeader: {[k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
-    UpdateFirmware: (input: IUpdateFirmwareInput, cb: (err: any | null, result: IUpdateFirmwareOutput, raw: string,  soapHeader: {[k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
-    ChangeConfiguration: (input: IChangeConfigurationInput, cb: (err: any | null, result: IChangeConfigurationOutput, raw: string,  soapHeader: {[k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
-    RemoteStartTransaction: (input: IRemoteStartTransactionInput, cb: (err: any | null, result: IRemoteStartTransactionOutput, raw: string,  soapHeader: {[k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
-    RemoteStopTransaction: (input: IRemoteStopTransactionInput, cb: (err: any | null, result: IRemoteStopTransactionOutput, raw: string,  soapHeader: {[k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
-    CancelReservation: (input: ICancelReservationInput, cb: (err: any | null, result: ICancelReservationOutput, raw: string,  soapHeader: {[k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
-    DataTransfer: (input: IDataTransferInput, cb: (err: any | null, result: IDataTransferOutput, raw: string,  soapHeader: {[k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
-    GetConfiguration: (input: IGetConfigurationInput, cb: (err: any | null, result: IGetConfigurationOutput, raw: string,  soapHeader: {[k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
-    GetLocalListVersion: (input: IGetLocalListVersionInput, cb: (err: any | null, result: IGetLocalListVersionOutput, raw: string,  soapHeader: {[k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
-    ReserveNow: (input: IReserveNowInput, cb: (err: any | null, result: IReserveNowOutput, raw: string,  soapHeader: {[k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
-    SendLocalList: (input: ISendLocalListInput, cb: (err: any | null, result: ISendLocalListOutput, raw: string,  soapHeader: {[k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
+    UnlockConnector: (input: IUnlockConnectorInput, cb: (err: any | null, result: IUnlockConnectorOutput, raw: string, soapHeader: { [k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
+    Reset: (input: IResetInput, cb: (err: any | null, result: IResetOutput, raw: string, soapHeader: { [k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
+    ChangeAvailability: (input: IChangeAvailabilityInput, cb: (err: any | null, result: IChangeAvailabilityOutput, raw: string, soapHeader: { [k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
+    GetDiagnostics: (input: IGetDiagnosticsInput, cb: (err: any | null, result: IGetDiagnosticsOutput, raw: string, soapHeader: { [k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
+    ClearCache: (input: IClearCacheInput, cb: (err: any | null, result: IClearCacheOutput, raw: string, soapHeader: { [k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
+    UpdateFirmware: (input: IUpdateFirmwareInput, cb: (err: any | null, result: IUpdateFirmwareOutput, raw: string, soapHeader: { [k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
+    ChangeConfiguration: (input: IChangeConfigurationInput, cb: (err: any | null, result: IChangeConfigurationOutput, raw: string, soapHeader: { [k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
+    RemoteStartTransaction: (input: IRemoteStartTransactionInput, cb: (err: any | null, result: IRemoteStartTransactionOutput, raw: string, soapHeader: { [k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
+    RemoteStopTransaction: (input: IRemoteStopTransactionInput, cb: (err: any | null, result: IRemoteStopTransactionOutput, raw: string, soapHeader: { [k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
+    CancelReservation: (input: ICancelReservationInput, cb: (err: any | null, result: ICancelReservationOutput, raw: string, soapHeader: { [k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
+    DataTransfer: (input: IDataTransferInput, cb: (err: any | null, result: IDataTransferOutput, raw: string, soapHeader: { [k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
+    GetConfiguration: (input: IGetConfigurationInput, cb: (err: any | null, result: IGetConfigurationOutput, raw: string, soapHeader: { [k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
+    GetLocalListVersion: (input: IGetLocalListVersionInput, cb: (err: any | null, result: IGetLocalListVersionOutput, raw: string, soapHeader: { [k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
+    ReserveNow: (input: IReserveNowInput, cb: (err: any | null, result: IReserveNowOutput, raw: string, soapHeader: { [k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
+    SendLocalList: (input: ISendLocalListInput, cb: (err: any | null, result: ISendLocalListOutput, raw: string, soapHeader: { [k: string]: any; }) => any, options?: any, extraHeaders?: any) => void;
 }
 
 export namespace ChargePointServiceSoap12Types {

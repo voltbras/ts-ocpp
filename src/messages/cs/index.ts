@@ -13,6 +13,9 @@ export type CentralSystemAction<V extends OCPPVersion = OCPPVersion> = keyof Cen
 
 
 export const centralSystemActions: CentralSystemAction<'v1.6-json'>[] = [
+  "CancelReservation",
+  "ChangeAvailability",
+  "ChangeConfiguration",
   "ClearCache",
   "ClearChargingProfile",
   "DataTransfer",
@@ -32,6 +35,9 @@ export const centralSystemActions: CentralSystemAction<'v1.6-json'>[] = [
 ];
 
 export const soapCentralSystemActions: CentralSystemAction<'v1.5-soap'>[] = [
+  "CancelReservation",
+  "ChangeAvailability",
+  "ChangeConfiguration",
   "ClearCache",
   "DataTransfer",
   "GetConfiguration",

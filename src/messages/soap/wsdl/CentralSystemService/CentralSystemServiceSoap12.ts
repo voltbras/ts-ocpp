@@ -157,9 +157,9 @@ export namespace CentralSystemServiceSoap12Types {
         /** urn://Ocpp/Cs/2012/06/#AuthorizationStatus(Accepted,Blocked,Expired,Invalid,ConcurrentTx) */
         status: "Accepted" | "Blocked" | "Expired" | "Invalid" | "ConcurrentTx";
         /** urn://Ocpp/Cs/2012/06/#s:dateTime(undefined) */
-        expiryDate: string;
+        expiryDate?: string;
         /** urn://Ocpp/Cs/2012/06/#IdToken(maxLength) */
-        parentIdTag: string;
+        parentIdTag?: string;
     }
     export interface Ivalues {
         /** urn://Ocpp/Cs/2012/06/#s:dateTime(undefined) */
