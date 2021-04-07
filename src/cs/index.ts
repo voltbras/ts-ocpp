@@ -24,7 +24,10 @@ type ConnectionListener = (
   status: 'disconnected' | 'connected'
 ) => void;
 
-type RequestMetadata = { chargePointId: string };
+export type RequestMetadata = {
+  chargePointId: string
+  httpRequest: IncomingMessage;
+};
 
 export type CSSendRequestArgs<T extends CentralSystemAction<V>, V extends OCPPVersion> = {
   ocppVersion: 'v1.6-json',
@@ -150,12 +153,15 @@ export default class CentralSystem {
 
   /** @internal */
   private getSoapHandler(action: ActionName): ISoapServiceMethod {
-    return async (request, respond, headers) => {
+    return async (request, respond, headers, httpRequest) => {
       const chargePointId = headers.chargeBoxIdentity;
       if (!chargePointId)
         throw new OCPPRequestError('No charge box identity was passed', 'GenericError');
 
-      const response = await this.cpHandler({ action, ocppVersion: 'v1.5-soap', ...request }, { chargePointId });
+      const response = await this.cpHandler({ action, ocppVersion: 'v1.5-soap', ...request }, {
+        chargePointId,
+        httpRequest,
+      });
 
       if (!response)
         throw new OCPPRequestError('Could not answer request', 'InternalError');
@@ -165,33 +171,33 @@ export default class CentralSystem {
   }
 
   /** @internal */
-  private handleConnection(socket: WebSocket, request: IncomingMessage) {
+  private handleConnection(socket: WebSocket, httpRequest: IncomingMessage) {
     if (!socket.protocol) {
       socket.close();
       return;
     }
-    const cpId = request.url?.split('/').pop();
-    if (!cpId) {
+    const chargePointId = httpRequest.url?.split('/').pop();
+    if (!chargePointId) {
       socket.close();
       return;
     }
 
-    this.listeners.forEach((f) => f(cpId, 'connected'));
+    this.listeners.forEach((f) => f(chargePointId, 'connected'));
 
     const connection = new Connection(
       socket,
       // @ts-ignore, TS is not good with dependent typing, it doesn't realize that the function
       // returns OCPP v1.6 responses when the request is a OCPP v1.6 request
-      (request) => this.cpHandler(request, { chargePointId: cpId }, 'v1.6-json'),
+      (request) => this.cpHandler(request, { chargePointId, httpRequest }),
       chargePointActions,
       centralSystemActions,
     );
-    this.connections[cpId] = connection;
+    this.connections[chargePointId] = connection;
 
     socket.on('message', (data) => connection.handleWebsocketData(data));
     socket.on('close', () => {
-      delete this.connections[cpId];
-      this.listeners.forEach((f) => f(cpId, 'disconnected'));
+      delete this.connections[chargePointId];
+      this.listeners.forEach((f) => f(chargePointId, 'disconnected'));
     });
   }
 }

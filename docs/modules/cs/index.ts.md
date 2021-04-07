@@ -17,12 +17,9 @@ Sets up a central system, that can communicate with charge points
     - [addConnectionListener (method)](#addconnectionlistener-method)
     - [close (method)](#close-method)
     - [sendRequest (method)](#sendrequest-method)
-    - [setupSoapServer (method)](#setupsoapserver-method)
-    - [setupWebsocketsServer (method)](#setupwebsocketsserver-method)
-    - [getSoapHandler (method)](#getsoaphandler-method)
-    - [handleConnection (method)](#handleconnection-method)
 - [utils](#utils)
   - [CSSendRequestArgs (type alias)](#cssendrequestargs-type-alias)
+  - [RequestMetadata (type alias)](#requestmetadata-type-alias)
 
 ---
 
@@ -85,38 +82,6 @@ public close()
 sendRequest<V extends OCPPVersion, T extends CentralSystemAction>(args: CSSendRequestArgs<T, V>): EitherAsync<OCPPRequestError, Response<T, V>>
 ```
 
-### setupSoapServer (method)
-
-**Signature**
-
-```ts
-private setupSoapServer()
-```
-
-### setupWebsocketsServer (method)
-
-**Signature**
-
-```ts
-private setupWebsocketsServer(): WebSocket.Server
-```
-
-### getSoapHandler (method)
-
-**Signature**
-
-```ts
-private getSoapHandler(action: ActionName): ISoapServiceMethod
-```
-
-### handleConnection (method)
-
-**Signature**
-
-```ts
-private handleConnection(socket: WebSocket, request: IncomingMessage)
-```
-
 # utils
 
 ## CSSendRequestArgs (type alias)
@@ -138,4 +103,15 @@ export type CSSendRequestArgs<T extends CentralSystemAction<V>, V extends OCPPVe
       payload: Omit<Request<T, V>, 'action' | 'ocppVersion'>
       action: T
     }
+```
+
+## RequestMetadata (type alias)
+
+**Signature**
+
+```ts
+export type RequestMetadata = {
+  chargePointId: string
+  httpRequest: IncomingMessage
+}
 ```

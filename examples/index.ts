@@ -1,6 +1,7 @@
-import CentralSystem from '../src/cs/server';
+import CentralSystem from '../src/cs';
 
-const cs = new CentralSystem(8080, (req, { chargePointId }) => {
+const cs = new CentralSystem(8080, (req, metadata) => {
+  console.log('new request', metadata)
   const { ocppVersion } = req;
   switch (req.action) {
     case 'Heartbeat':
