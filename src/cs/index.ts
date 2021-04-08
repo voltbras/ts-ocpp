@@ -72,16 +72,16 @@ export default class CentralSystem {
   private listeners: ConnectionListener[] = [];
   private websocketsServer: WebSocket.Server;
   private httpServer: Server;
-  private rejectRequestIfNotValid: boolean;
+  private rejectInvalidRequests: boolean;
 
   constructor(
     port: number,
     cpHandler: RequestHandler<ChargePointAction, RequestMetadata>,
-    rejectRequestIfNotValid = true,
+    rejectInvalidRequests = true,
     host: string = '0.0.0.0'
   ) {
     this.cpHandler = cpHandler;
-    this.rejectRequestIfNotValid = rejectRequestIfNotValid;
+    this.rejectInvalidRequests = rejectInvalidRequests;
 
     this.httpServer = createServer();
     this.httpServer.listen(port, host);
@@ -195,7 +195,7 @@ export default class CentralSystem {
       (request, validationError) => this.cpHandler(request, { chargePointId, httpRequest, validationError }),
       chargePointActions,
       centralSystemActions,
-      this.rejectRequestIfNotValid,
+      this.rejectInvalidRequests,
     );
     this.connections[chargePointId] = connection;
 

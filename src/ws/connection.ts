@@ -15,7 +15,7 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
     private readonly requestHandler: RequestHandler<ReqAction, ValidationError | undefined, 'v1.6-json'>,
     private readonly requestedActions: ReqAction[],
     private readonly respondedActions: ActionName<'v1.6-json'>[],
-    private readonly rejectRequestIfNotValid: boolean = true,
+    private readonly rejectInvalidRequests: boolean = true,
   ) { }
 
   public sendRequest<T extends ActionName<'v1.6-json'>>(action: T, { action: _, ocppVersion: __, ...payload }: Request<T, 'v1.6-json'>): EitherAsync<OCPPRequestError, Response<T, 'v1.6-json'>> {
@@ -78,7 +78,7 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
                 validationError?: ValidationError
               }>(request => ({ request }))
               .chainLeft(async validationError => {
-                return (this.rejectRequestIfNotValid
+                return (this.rejectInvalidRequests
                   ? Left(validationError)
                   // allow invalid requests to be passed to the handler
                   : Right({
