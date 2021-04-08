@@ -7,7 +7,7 @@ import { Right } from 'purify-ts';
 
 describe('test cs<->cp communication', () => {
   const connect = async (cp: ChargePoint, cs: CentralSystem) => {
-    let triggerConnected = (cpId: string) => { };
+    let triggerConnected = (_cpId: string) => { };
     cs.addConnectionListener((cpId, status) => {
       if (status === 'connected') triggerConnected(cpId);
     });
@@ -26,7 +26,7 @@ describe('test cs<->cp communication', () => {
 
   it('should connect', async () => {
     const PORT = 8080;
-    const cs = new CentralSystem(PORT, (req, cpId) => {
+    const cs = new CentralSystem(PORT, (_req, _cpId) => {
       throw new Error('cs');
     });
 
@@ -43,14 +43,14 @@ describe('test cs<->cp communication', () => {
 
   describe('sending messages', () => {
     const PORT = 8081;
-    let waitCsReqTrigger = (req: Request<ChargePointAction, 'v1.6-json'>) => { }
+    let waitCsReqTrigger = (_req: Request<ChargePointAction, 'v1.6-json'>) => { }
     const waitCsReq: Promise<Request<ChargePointAction, 'v1.6-json'>> = new Promise(resolve => waitCsReqTrigger = resolve);
 
-    let waitCpReqTrigger = (req: Request<CentralSystemAction, 'v1.6-json'>) => { }
-    const waitCpReq: Promise<Request<CentralSystemAction, 'v1.6-json'>> = new Promise(resolve => waitCpReqTrigger = resolve);
+    let waitCpReqTrigger = (_req: Request<CentralSystemAction, 'v1.6-json'>) => { }
+    const _waitCpReq: Promise<Request<CentralSystemAction, 'v1.6-json'>> = new Promise(resolve => waitCpReqTrigger = resolve);
 
     const currentTime = new Date().toISOString();
-    const cs = new CentralSystem(PORT, (req, { chargePointId }) => {
+    const cs = new CentralSystem(PORT, (req) => {
       waitCsReqTrigger(req as Request<ChargePointAction, 'v1.6-json'>);
       if (req.action === 'Heartbeat') {
         return { action: 'Heartbeat', ocppVersion: 'v1.6-json', currentTime };

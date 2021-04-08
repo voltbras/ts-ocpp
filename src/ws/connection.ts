@@ -106,7 +106,7 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
                 errorDetails: fail,
               }),
                 // remove action and ocpp version from payload
-                ({ action, ocppVersion, ...payload }) => ({
+                ({ action: _action, ocppVersion: _ocppVersion, ...payload }) => ({
                   type: MessageType.CALLRESULT,
                   id: message.id,
                   payload,
