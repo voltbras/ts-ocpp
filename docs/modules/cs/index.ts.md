@@ -33,7 +33,12 @@ Represents the central system, can communicate with charge points
 
 ```ts
 export declare class CentralSystem {
-  constructor(port: number, cpHandler: RequestHandler<ChargePointAction, RequestMetadata>, host: string = '0.0.0.0')
+  constructor(
+    port: number,
+    cpHandler: RequestHandler<ChargePointAction, RequestMetadata>,
+    rejectInvalidRequests = true,
+    host: string = '0.0.0.0'
+  )
 }
 ```
 
@@ -113,5 +118,6 @@ export type CSSendRequestArgs<T extends CentralSystemAction<V>, V extends OCPPVe
 export type RequestMetadata = {
   chargePointId: string
   httpRequest: IncomingMessage
+  validationError?: ValidationError
 }
 ```

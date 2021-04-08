@@ -31,8 +31,12 @@ Represents a connection to the central system
 ```ts
 export declare class ChargePoint {
   constructor(
-    private readonly cpId: string,
-    private readonly requestHandler: RequestHandler<CentralSystemAction<'v1.6-json'>, undefined, 'v1.6-json'>,
+    readonly id: string,
+    private readonly requestHandler: RequestHandler<
+      CentralSystemAction<'v1.6-json'>,
+      ValidationError | undefined,
+      'v1.6-json'
+    >,
     private readonly csUrl: string
   )
 }
