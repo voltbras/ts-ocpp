@@ -3,18 +3,19 @@ import { parseOCPPMessage, stringifyOCPPMessage } from './format';
 import { MessageType, OCPPJMessage } from './types';
 import { ActionName, Request, RequestHandler, Response } from '../messages';
 import { OCPPApplicationError, OCPPRequestError, ValidationError } from '../errors/index';
-import { validateMessageRequest, validateMessageResponse } from '../messages/validation';
+import { validateMessageRequest } from '../messages/validation';
 import * as uuid from 'uuid';
-import { EitherAsync, Left, Right, Just, Nothing, Maybe, MaybeAsync } from 'purify-ts';
+import { EitherAsync, Left, Right, Just, Nothing, MaybeAsync } from 'purify-ts';
 
 
 export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
   private messageTriggers: Record<string, (m: OCPPJMessage) => void> = {};
   constructor(
     private readonly socket: WebSocket,
-    private readonly requestHandler: RequestHandler<ReqAction, undefined, 'v1.6-json'>,
+    private readonly requestHandler: RequestHandler<ReqAction, ValidationError | undefined, 'v1.6-json'>,
     private readonly requestedActions: ReqAction[],
     private readonly respondedActions: ActionName<'v1.6-json'>[],
+    private readonly rejectRequestIfNotValid: boolean = true,
   ) { }
 
   public sendRequest<T extends ActionName<'v1.6-json'>>(action: T, { action: _, ocppVersion: __, ...payload }: Request<T, 'v1.6-json'>): EitherAsync<OCPPRequestError, Response<T, 'v1.6-json'>> {
@@ -51,8 +52,7 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
       .map(msg => this.handleOCPPMessage(msg))
       .map(async result => {
         await result.map(response => this.sendOCPPMessage(response))
-      }
-      )
+      })
   }
 
   public close() {
@@ -73,9 +73,22 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
         case MessageType.CALL:
           const response =
             await EitherAsync.liftEither(validateMessageRequest(message.action, message.payload ?? {}, this.requestedActions))
-              .chain(async request => {
+              .map<{
+                request: Request<ReqAction, 'v1.6-json'>,
+                validationError?: ValidationError
+              }>(request => ({ request }))
+              .chainLeft(async validationError => {
+                return (this.rejectRequestIfNotValid
+                  ? Left(validationError)
+                  // allow invalid requests to be passed to the handler
+                  : Right({
+                    validationError,
+                    request: { action: message.action, ocppVersion: 'v1.6-json', ...message.payload } as Request<ReqAction, 'v1.6-json'>
+                  }))
+              })
+              .chain(async ({ request, validationError }) => {
                 try {
-                  const response = await this.requestHandler(request, undefined);
+                  const response = await this.requestHandler(request, validationError);
                   return Right(response);
                 } catch (error) {
                   return Left(new OCPPApplicationError('on handling chargepoint request').wrap(error));

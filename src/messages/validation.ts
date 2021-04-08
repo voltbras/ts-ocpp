@@ -17,7 +17,7 @@ const validateMessage = <Action extends ActionName<'v1.6-json'>, T extends 'requ
   const result = validate(body, schema);
 
   if (!result.valid)
-    return Left(new ValidationError(`jsonschema errors: ${result.errors.map(err => err.toString())}`))
+    return Left(new ValidationError(`jsonschema errors: ${result.errors.map(err => err.toString())}`));
 
   return Right({
     action,
