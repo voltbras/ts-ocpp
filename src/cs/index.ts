@@ -7,7 +7,7 @@ import { ActionName, Request, RequestHandler, Response } from '../messages';
 import { ChargePointAction, chargePointActions } from '../messages/cp';
 import { Connection, SUPPORTED_PROTOCOLS } from '../ws';
 import { CentralSystemAction, centralSystemActions } from '../messages/cs';
-import { OCPPRequestError } from '../errors';
+import { OCPPRequestError, ValidationError } from '../errors';
 import { EitherAsync, Left } from 'purify-ts';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -27,6 +27,7 @@ type ConnectionListener = (
 export type RequestMetadata = {
   chargePointId: string
   httpRequest: IncomingMessage;
+  validationError?: ValidationError;
 };
 
 export type CSSendRequestArgs<T extends CentralSystemAction<V>, V extends OCPPVersion> = {
@@ -71,13 +72,16 @@ export default class CentralSystem {
   private listeners: ConnectionListener[] = [];
   private websocketsServer: WebSocket.Server;
   private httpServer: Server;
+  private rejectInvalidRequests: boolean;
 
   constructor(
     port: number,
     cpHandler: RequestHandler<ChargePointAction, RequestMetadata>,
+    rejectInvalidRequests = true,
     host: string = '0.0.0.0'
   ) {
     this.cpHandler = cpHandler;
+    this.rejectInvalidRequests = rejectInvalidRequests;
 
     this.httpServer = createServer();
     this.httpServer.listen(port, host);
@@ -188,9 +192,10 @@ export default class CentralSystem {
       socket,
       // @ts-ignore, TS is not good with dependent typing, it doesn't realize that the function
       // returns OCPP v1.6 responses when the request is a OCPP v1.6 request
-      (request) => this.cpHandler(request, { chargePointId, httpRequest }),
+      (request, validationError) => this.cpHandler(request, { chargePointId, httpRequest, validationError }),
       chargePointActions,
       centralSystemActions,
+      this.rejectInvalidRequests,
     );
     this.connections[chargePointId] = connection;
 
