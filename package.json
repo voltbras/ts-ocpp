@@ -22,7 +22,7 @@
   "dependencies": {
     "jsonschema": "^1.4.0",
     "purify-ts": "^0.16.1",
-    "soap": "^0.36.0",
+    "soap": "^0.37.0",
     "uuid": "^8.3.2",
     "ws": "^7.4.4"
   },
