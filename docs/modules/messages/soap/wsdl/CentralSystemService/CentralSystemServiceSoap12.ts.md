@@ -34,6 +34,11 @@ tslint:disable:max-line-length no-empty-interface
   - [IStatusNotificationOutput (interface)](#istatusnotificationoutput-interface)
   - [IStopTransactionInput (interface)](#istoptransactioninput-interface)
   - [IStopTransactionOutput (interface)](#istoptransactionoutput-interface)
+  - [Location (type alias)](#location-type-alias)
+  - [Measurand (type alias)](#measurand-type-alias)
+  - [ReadingContext (type alias)](#readingcontext-type-alias)
+  - [UnitOfMeasure (type alias)](#unitofmeasure-type-alias)
+  - [ValueFormat (type alias)](#valueformat-type-alias)
 
 ---
 
@@ -299,7 +304,7 @@ export interface IStartTransactionInput {
   /** urn://Ocpp/Cs/2012/06/#IdToken(maxLength) */
   idTag: string
   /** urn://Ocpp/Cs/2012/06/#s:dateTime(undefined) */
-  timestamp: string
+  timestamp: Date
   /** urn://Ocpp/Cs/2012/06/#s:int(undefined) */
   meterStart: number
   /** urn://Ocpp/Cs/2012/06/#s:int(undefined) */
@@ -347,7 +352,7 @@ export interface IStatusNotificationInput {
   /** urn://Ocpp/Cs/2012/06/#s:string(undefined) */
   info: string
   /** urn://Ocpp/Cs/2012/06/#s:dateTime(undefined) */
-  timestamp: string
+  timestamp: Date
   /** urn://Ocpp/Cs/2012/06/#s:string(undefined) */
   vendorId: string
   /** urn://Ocpp/Cs/2012/06/#s:string(undefined) */
@@ -374,7 +379,7 @@ export interface IStopTransactionInput {
   /** urn://Ocpp/Cs/2012/06/#IdToken(maxLength) */
   idTag: string
   /** urn://Ocpp/Cs/2012/06/#s:dateTime(undefined) */
-  timestamp: string
+  timestamp: Date
   /** urn://Ocpp/Cs/2012/06/#s:int(undefined) */
   meterStop: number
   transactionData: CentralSystemServiceSoap12Types.ItransactionData[]
@@ -389,4 +394,66 @@ export interface IStopTransactionInput {
 export interface IStopTransactionOutput {
   idTagInfo: CentralSystemServiceSoap12Types.IidTagInfo
 }
+```
+
+## Location (type alias)
+
+**Signature**
+
+```ts
+export type Location = 'Inlet' | 'Outlet' | 'Body'
+```
+
+## Measurand (type alias)
+
+**Signature**
+
+```ts
+export type Measurand =
+  | 'Energy.Active.Export.Register'
+  | 'Energy.Active.Import.Register'
+  | 'Energy.Reactive.Export.Register'
+  | 'Energy.Reactive.Import.Register'
+  | 'Energy.Active.Export.Interval'
+  | 'Energy.Active.Import.Interval'
+  | 'Energy.Reactive.Export.Interval'
+  | 'Energy.Reactive.Import.Interval'
+  | 'Power.Active.Export'
+  | 'Power.Active.Import'
+  | 'Power.Reactive.Export'
+  | 'Power.Reactive.Import'
+  | 'Current.Export'
+  | 'Current.Import'
+  | 'Voltage'
+  | 'Temperature'
+```
+
+## ReadingContext (type alias)
+
+**Signature**
+
+```ts
+export type ReadingContext =
+  | 'Interruption.Begin'
+  | 'Interruption.End'
+  | 'Sample.Clock'
+  | 'Sample.Periodic'
+  | 'Transaction.Begin'
+  | 'Transaction.End'
+```
+
+## UnitOfMeasure (type alias)
+
+**Signature**
+
+```ts
+export type UnitOfMeasure = 'Wh' | 'kWh' | 'varh' | 'kvarh' | 'W' | 'kW' | 'var' | 'kvar' | 'Amp' | 'Volt' | 'Celsius'
+```
+
+## ValueFormat (type alias)
+
+**Signature**
+
+```ts
+export type ValueFormat = 'Raw' | 'SignedData'
 ```
