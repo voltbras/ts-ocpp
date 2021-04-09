@@ -1,4 +1,54 @@
 /* tslint:disable:max-line-length no-empty-interface */
+
+export type ReadingContext =
+    | 'Interruption.Begin'
+    | 'Interruption.End'
+    | 'Sample.Clock'
+    | 'Sample.Periodic'
+    | 'Transaction.Begin'
+    | 'Transaction.End';
+
+export type Measurand =
+    | 'Energy.Active.Export.Register'
+    | 'Energy.Active.Import.Register'
+    | 'Energy.Reactive.Export.Register'
+    | 'Energy.Reactive.Import.Register'
+    | 'Energy.Active.Export.Interval'
+    | 'Energy.Active.Import.Interval'
+    | 'Energy.Reactive.Export.Interval'
+    | 'Energy.Reactive.Import.Interval'
+    | 'Power.Active.Export'
+    | 'Power.Active.Import'
+    | 'Power.Reactive.Export'
+    | 'Power.Reactive.Import'
+    | 'Current.Export'
+    | 'Current.Import'
+    | 'Voltage'
+    | 'Temperature';
+
+export type ValueFormat =
+    | 'Raw'
+    | 'SignedData';
+
+export type UnitOfMeasure =
+    | 'Wh'
+    | 'kWh'
+    | 'varh'
+    | 'kvarh'
+    | 'W'
+    | 'kW'
+    | 'var'
+    | 'kvar'
+    | 'Amp'
+    | 'Volt'
+    | 'Celsius';
+
+export type Location =
+    | 'Inlet'
+    | 'Outlet'
+    | 'Body';
+
+
 export interface IAuthorizeInput {
     /** urn://Ocpp/Cs/2012/06/#IdToken(maxLength) */
     idTag: string;
@@ -14,7 +64,7 @@ export interface IStartTransactionInput {
     /** urn://Ocpp/Cs/2012/06/#IdToken(maxLength) */
     idTag: string;
     /** urn://Ocpp/Cs/2012/06/#s:dateTime(undefined) */
-    timestamp: string;
+    timestamp: Date;
     /** urn://Ocpp/Cs/2012/06/#s:int(undefined) */
     meterStart: number;
     /** urn://Ocpp/Cs/2012/06/#s:int(undefined) */
@@ -33,7 +83,7 @@ export interface IStopTransactionInput {
     /** urn://Ocpp/Cs/2012/06/#IdToken(maxLength) */
     idTag: string;
     /** urn://Ocpp/Cs/2012/06/#s:dateTime(undefined) */
-    timestamp: string;
+    timestamp: Date;
     /** urn://Ocpp/Cs/2012/06/#s:int(undefined) */
     meterStop: number;
     transactionData: CentralSystemServiceSoap12Types.ItransactionData[];
@@ -100,7 +150,7 @@ export interface IStatusNotificationInput {
     /** urn://Ocpp/Cs/2012/06/#s:string(undefined) */
     info: string;
     /** urn://Ocpp/Cs/2012/06/#s:dateTime(undefined) */
-    timestamp: string;
+    timestamp: Date;
     /** urn://Ocpp/Cs/2012/06/#s:string(undefined) */
     vendorId: string;
     /** urn://Ocpp/Cs/2012/06/#s:string(undefined) */
@@ -163,9 +213,23 @@ export namespace CentralSystemServiceSoap12Types {
     }
     export interface Ivalues {
         /** urn://Ocpp/Cs/2012/06/#s:dateTime(undefined) */
-        timestamp: string;
-        /** urn://Ocpp/Cs/2012/06/#s:string(undefined) */
-        value: string;
+        timestamp: Date;
+        // TODO: this is weird because it uses XML attributes :/
+        value: Array<{
+            attributes: {
+                /** Type of detail value: start, end or sample. Default = “Sample.Periodic” */
+                context?: ReadingContext;
+                /**  Raw or signed data. Default = “Raw” */
+                format?: ValueFormat;
+                /** Type of measurement. Default = “Energy.Active.Import.Register” */
+                measurand?: Measurand;
+                /** Location of measurement. Default = ”Outlet” */
+                location?: Location;
+                /** Unit of the value. Default = “Wh” if the (default) measurand is an “Energy” type. */
+                unit?: UnitOfMeasure;
+            };
+            '$value': string;
+        } | string>;
     }
     export interface ItransactionData {
         values: CentralSystemServiceSoap12Types.Ivalues[];
