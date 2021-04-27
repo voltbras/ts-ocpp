@@ -8,7 +8,7 @@
 export interface AuthorizeResponse {
   idTagInfo: {
     status: "Accepted" | "Blocked" | "Expired" | "Invalid" | "ConcurrentTx";
-    expiryDate?: string;
+    expiryDate?: Date | string;
     parentIdTag?: string;
     [k: string]: unknown;
   };
@@ -22,7 +22,7 @@ export interface AuthorizeResponse {
 
 export interface BootNotificationResponse {
   status: "Accepted" | "Pending" | "Rejected";
-  currentTime: string;
+  currentTime: Date | string;
   interval: number;
 }
 /* tslint:disable */
@@ -112,10 +112,10 @@ export interface FirmwareStatusNotificationResponse {}
 export interface GetCompositeScheduleResponse {
   status: "Accepted" | "Rejected";
   connectorId?: number;
-  scheduleStart?: string;
+  scheduleStart?: Date | string;
   chargingSchedule?: {
     duration?: number;
-    startSchedule?: string;
+    startSchedule?: Date | string;
     chargingRateUnit: "A" | "W";
     chargingSchedulePeriod: {
       startPeriod: number;
@@ -171,7 +171,7 @@ export interface GetLocalListVersionResponse {
  */
 
 export interface HeartbeatResponse {
-  currentTime: string;
+  currentTime: Date | string;
 }
 /* tslint:disable */
 /**
@@ -250,7 +250,7 @@ export interface SetChargingProfileResponse {
 
 export interface StartTransactionResponse {
   idTagInfo: {
-    expiryDate?: string;
+    expiryDate?: Date | string;
     parentIdTag?: string;
     status: "Accepted" | "Blocked" | "Expired" | "Invalid" | "ConcurrentTx";
     [k: string]: unknown;
@@ -274,7 +274,7 @@ export interface StatusNotificationResponse {}
 
 export interface StopTransactionResponse {
   idTagInfo?: {
-    expiryDate?: string;
+    expiryDate?: Date | string;
     parentIdTag?: string;
     status: "Accepted" | "Blocked" | "Expired" | "Invalid" | "ConcurrentTx";
     [k: string]: unknown;

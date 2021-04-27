@@ -39,4 +39,14 @@ describe('ws', () => {
         expect(stringified).toBe(raw);
       }
     );
+
+  it('date conversion', () => {
+    expect(stringifyOCPPMessage({
+      type: MessageType.CALLRESULT,
+      id: '123',
+      payload: {
+        currentTime: new Date("2021-04-09T23:01:38.100Z"),
+      }
+    })).toBe(`[3,\"123\",{\"currentTime\":\"2021-04-09T23:01:38.100Z\"}]`)
+  })
 })

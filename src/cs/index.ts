@@ -130,6 +130,23 @@ export default class CentralSystem {
   }
 
   /** @internal */
+  private convertDate(obj: object): object {
+    return Object.fromEntries(
+      Object
+        .entries(obj)
+        .map(([key, value]) => {
+          if (value instanceof Date)
+            return [key, value.toISOString()];
+          if (Array.isArray(value))
+            return [key, value.map(val => this.convertDate(val))];
+          if (typeof value === 'object')
+            return [key, this.convertDate(value)];
+          return [key, value];
+        })
+    )
+  }
+
+  /** @internal */
   private setupSoapServer() {
     const services: IServices = {
       CentralSystemService: {
@@ -170,7 +187,8 @@ export default class CentralSystem {
       if (!response)
         throw new OCPPRequestError('Could not answer request', 'InternalError');
       const { action: _, ocppVersion: __, ...responsePayload } = response;
-      respond?.(responsePayload);
+
+      respond?.(this.convertDate(responsePayload));
     }
   }
 

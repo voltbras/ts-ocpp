@@ -3,7 +3,7 @@ import { parseOCPPMessage, stringifyOCPPMessage } from './format';
 import { MessageType, OCPPJMessage } from './types';
 import { ActionName, Request, RequestHandler, Response } from '../messages';
 import { OCPPApplicationError, OCPPRequestError, ValidationError } from '../errors/index';
-import { validateMessageRequest } from '../messages/validation';
+import { validateMessageRequest, validateMessageResponse } from '../messages/validation';
 import * as uuid from 'uuid';
 import { EitherAsync, Left, Right, Just, Nothing, MaybeAsync } from 'purify-ts';
 
@@ -42,8 +42,7 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
       if (message.type === MessageType.CALLERROR) return Left(
         new OCPPRequestError('other side responded with error', message.errorCode, message.errorDescription, message.errorDetails)
       );
-
-      return Right(message.payload as Response<T, 'v1.6-json'>);
+      return validateMessageResponse(action, message.payload ?? {}, this.respondedActions);
     })
   }
 

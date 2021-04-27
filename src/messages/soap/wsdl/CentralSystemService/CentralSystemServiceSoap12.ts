@@ -97,7 +97,7 @@ export interface IHeartbeatInput { }
 
 export interface IHeartbeatOutput {
     /** urn://Ocpp/Cs/2012/06/#s:dateTime(undefined) */
-    currentTime: string;
+    currentTime: Date;
 }
 
 export interface IMeterValuesInput {
@@ -135,7 +135,7 @@ export interface IBootNotificationOutput {
     /** urn://Ocpp/Cs/2012/06/#RegistrationStatus(Accepted,Rejected) */
     status: "Accepted" | "Rejected";
     /** urn://Ocpp/Cs/2012/06/#s:dateTime(undefined) */
-    currentTime: string;
+    currentTime: Date;
     /** urn://Ocpp/Cs/2012/06/#s:int(undefined) */
     heartbeatInterval: number;
 }
@@ -207,7 +207,7 @@ export namespace CentralSystemServiceSoap12Types {
         /** urn://Ocpp/Cs/2012/06/#AuthorizationStatus(Accepted,Blocked,Expired,Invalid,ConcurrentTx) */
         status: "Accepted" | "Blocked" | "Expired" | "Invalid" | "ConcurrentTx";
         /** urn://Ocpp/Cs/2012/06/#s:dateTime(undefined) */
-        expiryDate?: string;
+        expiryDate?: Date;
         /** urn://Ocpp/Cs/2012/06/#IdToken(maxLength) */
         parentIdTag?: string;
     }

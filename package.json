@@ -14,8 +14,8 @@
     "copy-assets": "npm run copy-assets-wsdl && npm run copy-assets-jsonschema",
     "copy-assets-wsdl": "cp ./src/messages/soap/*.wsdl ./dist/messages/soap",
     "copy-assets-jsonschema": "cp -R ./src/messages/json ./dist/messages/json",
-    "prepare": "npm run build",
-    "prepublishOnly": "npm test && yarn docs-ts",
+    "prepare": "npm run build && yarn docs-ts",
+    "prepublishOnly": "npm test",
     "postversion": "git push && git push --tags",
     "lint": "eslint . --ext .js,.ts"
   },

@@ -14,7 +14,13 @@ const validateMessage = <Action extends ActionName<'v1.6-json'>, T extends 'requ
     return Left(new ValidationError('action is not valid'));
 
   const schema = require(`./json/${type}/${action}.json`);
-  const result = validate(body, schema);
+  const result = validate(body, schema, {
+    rewrite: (instance, schema) => {
+      if (schema.format === 'date-time')
+        return new Date(instance);
+      return instance;
+    }
+  });
 
   if (!result.valid)
     return Left(new ValidationError(`jsonschema errors: ${result.errors.map(err => err.toString())}`));

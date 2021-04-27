@@ -49,7 +49,7 @@ describe('test cs<->cp communication', () => {
     let waitCpReqTrigger = (_req: Request<CentralSystemAction, 'v1.6-json'>) => { }
     const _waitCpReq: Promise<Request<CentralSystemAction, 'v1.6-json'>> = new Promise(resolve => waitCpReqTrigger = resolve);
 
-    const currentTime = new Date().toISOString();
+    const currentTime = new Date();
     const cs = new CentralSystem(PORT, (req) => {
       waitCsReqTrigger(req as Request<ChargePointAction, 'v1.6-json'>);
       if (req.action === 'Heartbeat') {
@@ -81,18 +81,19 @@ describe('test cs<->cp communication', () => {
     beforeAll(async () => await connect(cp, cs));
 
     it('normal heartbeat', async () => {
-      const csResp = await cp.sendRequest({ ocppVersion: 'v1.6-json', action: 'Heartbeat', payload: {} });
+      const csResp = (await cp.sendRequest({ ocppVersion: 'v1.6-json', action: 'Heartbeat', payload: {} })).unsafeCoerce();
 
       expect((await waitCsReq).action).toBe('Heartbeat');
-      expect(csResp.map(resp => resp.currentTime)).toStrictEqual(Right(currentTime));
+      expect(csResp.currentTime).toBeInstanceOf(Date);
+      expect(csResp.currentTime).toStrictEqual(currentTime);
 
-      const cpResp = await cs.sendRequest({
+      const cpResp = (await cs.sendRequest({
         action: 'GetConfiguration',
         chargePointId: '456',
         ocppVersion: 'v1.6-json',
         payload: {},
-      });
-      expect(cpResp.map(resp => resp.configurationKey?.[0].key)).toStrictEqual(Right('Test'));
+      })).unsafeCoerce();
+      expect(cpResp.configurationKey?.[0].key).toStrictEqual('Test');
     })
 
     it('rejects invalid message', async () => {

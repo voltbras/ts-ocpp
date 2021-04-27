@@ -144,8 +144,8 @@ export interface GetDiagnosticsRequest {
   location: string;
   retries?: number;
   retryInterval?: number;
-  startTime?: string;
-  stopTime?: string;
+  startTime?: Date | string;
+  stopTime?: Date | string;
 }
 /* tslint:disable */
 /**
@@ -174,7 +174,7 @@ export interface MeterValuesRequest {
   connectorId: number;
   transactionId?: number;
   meterValue: {
-    timestamp: string;
+    timestamp: Date | string;
     sampledValue: {
       value: string;
       context?:
@@ -251,11 +251,11 @@ export interface RemoteStartTransactionRequest {
     chargingProfilePurpose: "ChargePointMaxProfile" | "TxDefaultProfile" | "TxProfile";
     chargingProfileKind: "Absolute" | "Recurring" | "Relative";
     recurrencyKind?: "Daily" | "Weekly";
-    validFrom?: string;
-    validTo?: string;
+    validFrom?: Date | string;
+    validTo?: Date | string;
     chargingSchedule: {
       duration?: number;
-      startSchedule?: string;
+      startSchedule?: Date | string;
       chargingRateUnit: "A" | "W";
       chargingSchedulePeriod: {
         startPeriod: number;
@@ -288,7 +288,7 @@ export interface RemoteStopTransactionRequest {
 
 export interface ReserveNowRequest {
   connectorId: number;
-  expiryDate: string;
+  expiryDate: Date | string;
   idTag: string;
   parentIdTag?: string;
   reservationId: number;
@@ -338,11 +338,11 @@ export interface SetChargingProfileRequest {
     chargingProfilePurpose: "ChargePointMaxProfile" | "TxDefaultProfile" | "TxProfile";
     chargingProfileKind: "Absolute" | "Recurring" | "Relative";
     recurrencyKind?: "Daily" | "Weekly";
-    validFrom?: string;
-    validTo?: string;
+    validFrom?: Date | string;
+    validTo?: Date | string;
     chargingSchedule: {
       duration?: number;
-      startSchedule?: string;
+      startSchedule?: Date | string;
       chargingRateUnit: "A" | "W";
       chargingSchedulePeriod: {
         startPeriod: number;
@@ -368,7 +368,7 @@ export interface StartTransactionRequest {
   idTag: string;
   meterStart: number;
   reservationId?: number;
-  timestamp: string;
+  timestamp: Date | string;
 }
 /* tslint:disable */
 /**
@@ -407,7 +407,7 @@ export interface StatusNotificationRequest {
   | "Reserved"
   | "Unavailable"
   | "Faulted";
-  timestamp?: string;
+  timestamp?: Date | string;
   vendorId?: string;
   vendorErrorCode?: string;
 }
@@ -421,7 +421,7 @@ export interface StatusNotificationRequest {
 export interface StopTransactionRequest {
   idTag?: string;
   meterStop: number;
-  timestamp: string;
+  timestamp: Date | string;
   transactionId: number;
   reason?:
   | "EmergencyStop"
@@ -436,7 +436,7 @@ export interface StopTransactionRequest {
   | "UnlockCommand"
   | "DeAuthorized";
   transactionData?: {
-    timestamp: string;
+    timestamp: Date | string;
     sampledValue: {
       value: string;
       context?:
@@ -533,6 +533,6 @@ export interface UnlockConnectorRequest {
 export interface UpdateFirmwareRequest {
   location: string;
   retries?: number;
-  retrieveDate: string;
+  retrieveDate: Date | string;
   retryInterval?: number;
 }
