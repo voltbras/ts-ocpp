@@ -59,7 +59,7 @@ describe('test cs<->cp communication', () => {
         return { action: 'StatusNotification', ocppVersion: 'v1.6-json' };
       }
       throw new Error('message not supported');
-    }, false);
+    }, { rejectInvalidRequests: false });
 
     const cp = new ChargePoint(
       '456',

@@ -19,6 +19,7 @@ Sets up a central system, that can communicate with charge points
     - [sendRequest (method)](#sendrequest-method)
 - [utils](#utils)
   - [CSSendRequestArgs (type alias)](#cssendrequestargs-type-alias)
+  - [CentralSystemOptions (type alias)](#centralsystemoptions-type-alias)
   - [RequestMetadata (type alias)](#requestmetadata-type-alias)
 
 ---
@@ -36,8 +37,7 @@ export declare class CentralSystem {
   constructor(
     port: number,
     cpHandler: RequestHandler<ChargePointAction, RequestMetadata>,
-    rejectInvalidRequests = true,
-    host: string = '0.0.0.0'
+    options: CentralSystemOptions = {}
   )
 }
 ```
@@ -108,6 +108,26 @@ export type CSSendRequestArgs<T extends CentralSystemAction<V>, V extends OCPPVe
       payload: Omit<Request<T, V>, 'action' | 'ocppVersion'>
       action: T
     }
+```
+
+## CentralSystemOptions (type alias)
+
+**Signature**
+
+```ts
+export type CentralSystemOptions = {
+  /** if the chargepoint sends an invalid request(in ocpp v1.6), we can still forward it to the handler */
+  rejectInvalidRequests?: boolean
+  /** default is 0.0.0.0 */
+  host?: string
+  /**
+   * can be used to log exactly what the chargepoint sends to this central system without any processing
+   * @example
+   * onRawSocketData: (data) => console.log(data.toString('ascii'))
+   **/
+  onRawSocketData?: (data: Buffer) => void
+  onRawWebsocketData?: (data: WebSocket.Data, metadata: Omit<RequestMetadata, 'validationError'>) => void
+}
 ```
 
 ## RequestMetadata (type alias)
