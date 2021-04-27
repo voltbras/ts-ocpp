@@ -43,6 +43,20 @@ export type CSSendRequestArgs<T extends CentralSystemAction<V>, V extends OCPPVe
   action: T,
 };
 
+export type CentralSystemOptions = {
+  /** if the chargepoint sends an invalid request(in ocpp v1.6), we can still forward it to the handler */
+  rejectInvalidRequests?: boolean,
+  /** default is 0.0.0.0 */
+  host?: string,
+  /**
+   * can be used to log exactly what the chargepoint sends to this central system without any processing
+   * @example
+   * onRawSocketData: (data) => console.log(data.toString('ascii'))
+   **/
+  onRawSocketData?: (data: Buffer) => void
+  onRawWebsocketData?: (data: WebSocket.Data, metadata: Omit<RequestMetadata, 'validationError'>) => void
+}
+
 /**
  * Represents the central system, can communicate with charge points
  *
@@ -73,17 +87,23 @@ export default class CentralSystem {
   private websocketsServer: WebSocket.Server;
   private httpServer: Server;
   private rejectInvalidRequests: boolean;
+  private onRawWebsocketData?: CentralSystemOptions['onRawWebsocketData'];
 
   constructor(
     port: number,
     cpHandler: RequestHandler<ChargePointAction, RequestMetadata>,
-    rejectInvalidRequests = true,
-    host: string = '0.0.0.0'
+    options: CentralSystemOptions = {},
   ) {
     this.cpHandler = cpHandler;
-    this.rejectInvalidRequests = rejectInvalidRequests;
+    const host = options.host ?? '0.0.0.0';
+    this.onRawWebsocketData = options.onRawWebsocketData;
+    this.rejectInvalidRequests = options.rejectInvalidRequests ?? true;
 
     this.httpServer = createServer();
+    this.httpServer.on('connection', socket =>
+      options.onRawSocketData &&
+      socket.on('data', data => options.onRawSocketData?.(data))
+    )
     this.httpServer.listen(port, host);
 
     this.setupSoapServer();
@@ -149,9 +169,7 @@ export default class CentralSystem {
     const server = new WebSocket.Server({ server: this.httpServer, handleProtocols });
     server.on('error', console.error);
     server.on('upgrade', console.info);
-    server.on('connection', (socket, request) =>
-      this.handleConnection(socket, request)
-    );
+    server.on('connection', (socket, request) => this.handleConnection(socket, request));
     return server;
   }
 
@@ -188,18 +206,22 @@ export default class CentralSystem {
 
     this.listeners.forEach((f) => f(chargePointId, 'connected'));
 
+    const metadata: RequestMetadata = { chargePointId, httpRequest };
     const connection = new Connection(
       socket,
       // @ts-ignore, TS is not good with dependent typing, it doesn't realize that the function
       // returns OCPP v1.6 responses when the request is a OCPP v1.6 request
-      (request, validationError) => this.cpHandler(request, { chargePointId, httpRequest, validationError }),
+      (request, validationError) => this.cpHandler(request, { ...metadata, validationError }),
       chargePointActions,
       centralSystemActions,
       this.rejectInvalidRequests,
     );
     this.connections[chargePointId] = connection;
 
-    socket.on('message', (data) => connection.handleWebsocketData(data));
+    socket.on('message', (data) => {
+      this.onRawWebsocketData?.(data, metadata);
+      connection.handleWebsocketData(data)
+    });
     socket.on('close', () => {
       delete this.connections[chargePointId];
       this.listeners.forEach((f) => f(chargePointId, 'disconnected'));
