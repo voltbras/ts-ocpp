@@ -23,7 +23,7 @@ export default class SOAPConnection {
         ? '../messages/soap/ocpp_centralsystemservice_1.5_final.wsdl'
         : '../messages/soap/ocpp_chargepointservice_1.5_final.wsdl'
     ));
-    const soapClient = await soap.createClientAsync(wsdlPath, { endpoint });
+    const soapClient = await soap.createClientAsync(wsdlPath, { endpoint, forceSoap12Headers: true });
     return new SOAPConnection(soapClient, connectedTo, chargePointId);
   }
 
