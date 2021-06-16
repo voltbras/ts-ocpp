@@ -165,7 +165,12 @@ export default class CentralSystem {
       }
     };
     const xml = fs.readFileSync(path.resolve(__dirname, '../messages/soap/ocpp_centralsystemservice_1.5_final.wsdl'), 'utf8');
-    const server = soap.listen(this.httpServer, { services, path: '/', xml });
+    const server = soap.listen(this.httpServer, {
+      services,
+      path: '/',
+      xml,
+      forceSoap12Headers: true,
+    });
 
     server.log = (type, data) => {
       if (type === 'received' || type === 'replied') {

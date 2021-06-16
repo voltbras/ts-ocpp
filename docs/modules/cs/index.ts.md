@@ -126,6 +126,7 @@ export type CentralSystemOptions = {
    * onRawSocketData: (data) => console.log(data.toString('ascii'))
    **/
   onRawSocketData?: (data: Buffer) => void
+  onRawSoapData?: (type: 'replied' | 'received', data: string) => void
   onRawWebsocketData?: (data: WebSocket.Data, metadata: Omit<RequestMetadata, 'validationError'>) => void
 }
 ```
