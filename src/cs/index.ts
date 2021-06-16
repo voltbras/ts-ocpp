@@ -56,8 +56,12 @@ export type CentralSystemOptions = {
    **/
   onRawSocketData?: (data: Buffer) => void
   onRawSoapData?: (type: 'replied' | 'received', data: string) => void
-  onRawWebsocketData?: (data: WebSocket.Data, metadata: Omit<RequestMetadata, 'validationError'>) => void
+  onRawWebsocketData?: (data: WebSocket.Data, metadata: Omit<RequestMetadata, 'validationError'>) => void,
+  /** in milliseconds */
+  websocketPingInterval?: number
 }
+
+type RequiredPick<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
 
 /**
  * Represents the central system, can communicate with charge points
@@ -89,7 +93,7 @@ export default class CentralSystem {
   private websocketsServer: WebSocket.Server;
   private soapServer: soap.Server;
   private httpServer: Server;
-  private options: CentralSystemOptions;
+  private options: RequiredPick<CentralSystemOptions, 'websocketPingInterval' | 'rejectInvalidRequests'>;
 
   constructor(
     port: number,
@@ -100,7 +104,8 @@ export default class CentralSystem {
     const host = options.host ?? '0.0.0.0';
     this.options = {
       ...options,
-      rejectInvalidRequests: options.rejectInvalidRequests ?? true
+      rejectInvalidRequests: options.rejectInvalidRequests ?? true,
+      websocketPingInterval: 30_000
     };
 
     this.httpServer = createServer();
@@ -236,6 +241,12 @@ export default class CentralSystem {
     this.listeners.forEach((f) => f(chargePointId, 'connected'));
 
     const metadata: RequestMetadata = { chargePointId, httpRequest };
+
+    function noop() { };
+    const pingInterval = setInterval(() => {
+      socket.ping(noop);
+    }, this.options.websocketPingInterval);
+
     const connection = new Connection(
       socket,
       // @ts-ignore, TS is not good with dependent typing, it doesn't realize that the function
@@ -253,6 +264,7 @@ export default class CentralSystem {
     });
     socket.on('close', () => {
       delete this.connections[chargePointId];
+      clearInterval(pingInterval);
       this.listeners.forEach((f) => f(chargePointId, 'disconnected'));
     });
   }

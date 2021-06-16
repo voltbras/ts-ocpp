@@ -16,6 +16,8 @@ const cs = new CentralSystem(8080, (req, metadata) => {
   onRawWebsocketData: (data, { chargePointId }) => console.log(chargePointId, data.toString())
 });
 
+cs.addConnectionListener(console.log);
+
 console.log('server started');
 
 if (process.env.SEND_COMMAND) {
