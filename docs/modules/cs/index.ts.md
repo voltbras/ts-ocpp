@@ -128,6 +128,8 @@ export type CentralSystemOptions = {
   onRawSocketData?: (data: Buffer) => void
   onRawSoapData?: (type: 'replied' | 'received', data: string) => void
   onRawWebsocketData?: (data: WebSocket.Data, metadata: Omit<RequestMetadata, 'validationError'>) => void
+  /** in milliseconds */
+  websocketPingInterval?: number
 }
 ```
 
