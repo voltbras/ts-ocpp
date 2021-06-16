@@ -2,7 +2,7 @@
  * Sets up a central system, that can communicate with charge points
  */
 import WebSocket from 'ws';
-import { IncomingMessage, createServer, Server } from 'http';
+import { IncomingMessage, createServer, Server, ServerResponse } from 'http';
 import { ActionName, Request, RequestHandler, Response } from '../messages';
 import { ChargePointAction, chargePointActions } from '../messages/cp';
 import { Connection, SUPPORTED_PROTOCOLS } from '../ws';
@@ -12,6 +12,7 @@ import { EitherAsync, Left } from 'purify-ts';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as soap from 'soap';
+import * as uuid from 'uuid';
 import { IServices, ISoapServiceMethod } from 'soap';
 import { OCPPVersion } from '../types';
 import SOAPConnection from '../soap/connection';
@@ -54,6 +55,7 @@ export type CentralSystemOptions = {
    * onRawSocketData: (data) => console.log(data.toString('ascii'))
    **/
   onRawSocketData?: (data: Buffer) => void
+  onRawSoapData?: (type: 'replied' | 'received', data: string) => void
   onRawWebsocketData?: (data: WebSocket.Data, metadata: Omit<RequestMetadata, 'validationError'>) => void
 }
 
@@ -85,9 +87,9 @@ export default class CentralSystem {
   private connections: Record<string, Connection<ChargePointAction>> = {};
   private listeners: ConnectionListener[] = [];
   private websocketsServer: WebSocket.Server;
+  private soapServer: soap.Server;
   private httpServer: Server;
-  private rejectInvalidRequests: boolean;
-  private onRawWebsocketData?: CentralSystemOptions['onRawWebsocketData'];
+  private options: CentralSystemOptions;
 
   constructor(
     port: number,
@@ -96,17 +98,19 @@ export default class CentralSystem {
   ) {
     this.cpHandler = cpHandler;
     const host = options.host ?? '0.0.0.0';
-    this.onRawWebsocketData = options.onRawWebsocketData;
-    this.rejectInvalidRequests = options.rejectInvalidRequests ?? true;
+    this.options = {
+      ...options,
+      rejectInvalidRequests: options.rejectInvalidRequests ?? true
+    };
 
     this.httpServer = createServer();
-    this.httpServer.on('connection', socket =>
+    this.httpServer.on('connection', socket => {
       options.onRawSocketData &&
-      socket.on('data', data => options.onRawSocketData?.(data))
-    )
+        socket.on('data', data => options.onRawSocketData?.(data));
+    })
     this.httpServer.listen(port, host);
 
-    this.setupSoapServer();
+    this.soapServer = this.setupSoapServer();
     this.websocketsServer = this.setupWebsocketsServer();
   }
 
@@ -161,7 +165,27 @@ export default class CentralSystem {
       }
     };
     const xml = fs.readFileSync(path.resolve(__dirname, '../messages/soap/ocpp_centralsystemservice_1.5_final.wsdl'), 'utf8');
-    soap.listen(this.httpServer, { services, path: '/', xml });
+    const server = soap.listen(this.httpServer, { services, path: '/', xml });
+
+    server.log = (type, data) => {
+      if (type === 'received' || type === 'replied') {
+        this.options.onRawSoapData?.(type, data)
+      }
+    };
+
+    // makes headers case insensitive(lowercase)
+    const normalizeHeaders = (headers: Record<string, string>) =>
+      Object.entries(headers).reduce<Record<string, string>>((acc, [key, val]) => (acc[key.toLowerCase()] = val, acc), {});
+
+    server.addSoapHeader((action: any, args: any, headers: Record<string, string>) => ({
+      chargeBoxIdentity: normalizeHeaders(headers).chargeboxidentity
+    }), '', 'ocpp', 'urn://Ocpp/Cs/2012/06/');
+    server.addSoapHeader((action: any, args: any, headers: any) => ({
+      'Action': '/' + action + 'Response',
+      'MessageID': uuid.v4(),
+      'RelatesTo': normalizeHeaders(headers).messageid,
+    }), '', 'wsa5', 'http://www.w3.org/2005/08/addressing');
+    return server;
   }
 
   /** @internal */
@@ -214,12 +238,12 @@ export default class CentralSystem {
       (request, validationError) => this.cpHandler(request, { ...metadata, validationError }),
       chargePointActions,
       centralSystemActions,
-      this.rejectInvalidRequests,
+      this.options.rejectInvalidRequests,
     );
     this.connections[chargePointId] = connection;
 
     socket.on('message', (data) => {
-      this.onRawWebsocketData?.(data, metadata);
+      this.options.onRawWebsocketData?.(data, metadata);
       connection.handleWebsocketData(data)
     });
     socket.on('close', () => {
