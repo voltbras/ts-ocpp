@@ -151,7 +151,7 @@ export interface IReserveNowInput {
     /** urn://Ocpp/Cp/2012/06/#s:int(undefined) */
     connectorId: number;
     /** urn://Ocpp/Cp/2012/06/#s:dateTime(undefined) */
-    expiryDate: Date;
+    expiryDate: string;
     /** urn://Ocpp/Cp/2012/06/#IdToken(maxLength) */
     idTag: string;
     /** urn://Ocpp/Cp/2012/06/#IdToken(maxLength) */
