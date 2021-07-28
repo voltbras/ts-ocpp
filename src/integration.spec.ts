@@ -106,4 +106,72 @@ describe('test cs<->cp communication', () => {
 
     afterAll(() => cs.close());
   });
+
+  it('if two sockets open before the first one closing, should still remain the latest socket', async () => {
+    const PORT = 8082;
+    const cs = new CentralSystem(PORT, (_req, _cpId) => {
+      throw new Error('cs');
+    });
+
+    const cp = new ChargePoint(
+      '123',
+      req => {
+        switch (req.action) {
+          case 'GetConfiguration': return {
+            action: req.action,
+            ocppVersion: req.ocppVersion,
+            configurationKey: []
+          }
+          default: throw new Error('unsupported')
+        }
+      },
+      `ws://localhost:${PORT}`
+    );
+
+    let triggerConnected = (_cpId: string) => { };
+    let triggerDisconnected = (_cpId: string) => { };
+    cs.addConnectionListener((cpId, status) => {
+      if (status === 'connected') triggerConnected(cpId);
+      if (status === 'disconnected') triggerDisconnected(cpId);
+    });
+    const waitForConnection = (cpId: string) =>
+      new Promise((resolve) => {
+        triggerConnected = (connectedId) => {
+          if (connectedId == cpId) resolve(cpId);
+        };
+      });
+
+    const waitForDisconnection = (cpId: string) =>
+      new Promise((resolve) => {
+        triggerDisconnected = (connectedId) => {
+          if (connectedId == cpId) resolve(cpId);
+        };
+      });
+
+    // connecting once
+    let waitCentralSystem = waitForConnection(cp.id);
+    const firstConnection = await cp.connect();
+    await waitCentralSystem;
+
+    // connecting twice
+    waitCentralSystem = waitForConnection(cp.id);
+    const secondConnection = await cp.connect();
+    await waitCentralSystem;
+
+    waitCentralSystem = waitForDisconnection(cp.id);
+    firstConnection.close();
+    await waitCentralSystem;
+
+    // should send request to the second connection
+    (await cs.sendRequest({
+      action: 'GetConfiguration',
+      ocppVersion: 'v1.6-json',
+      chargePointId: cp.id,
+      payload: {}
+    })).unsafeCoerce();
+
+    // cleanup
+    cp.close();
+    cs.close()
+  })
 });

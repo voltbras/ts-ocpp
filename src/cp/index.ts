@@ -54,22 +54,23 @@ export default class ChargePoint {
     private readonly csUrl: string
   ) { }
 
-  async connect(): Promise<void> {
+  async connect(): Promise<Connection<CentralSystemAction<'v1.6-json'>>> {
     const url = `${this.csUrl}/${this.id}`;
     const socket = new WebSocket(url, SUPPORTED_PROTOCOLS);
 
-    this.connection = new Connection(
+    const connection = new Connection(
       socket,
       this.requestHandler,
       centralSystemActions,
       chargePointActions,
     );
+    this.connection = connection;
     // this.socket.on('close', () => (this.socket = undefined));
     socket.on('error', console.error);
-    socket.on('message', (data) => this.connection?.handleWebsocketData(data));
+    socket.on('message', (data) => connection?.handleWebsocketData(data));
 
     return new Promise((resolve) => {
-      socket?.on('open', () => resolve());
+      socket?.on('open', () => resolve(connection));
     });
   }
 

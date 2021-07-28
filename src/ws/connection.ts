@@ -11,7 +11,7 @@ import { EitherAsync, Left, Right, Just, Nothing, MaybeAsync } from 'purify-ts';
 export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
   private messageTriggers: Record<string, (m: OCPPJMessage) => void> = {};
   constructor(
-    private readonly socket: WebSocket,
+    public readonly socket: WebSocket,
     private readonly requestHandler: RequestHandler<ReqAction, ValidationError | undefined, 'v1.6-json'>,
     private readonly requestedActions: ReqAction[],
     private readonly respondedActions: ActionName<'v1.6-json'>[],
