@@ -70,7 +70,7 @@ const chargePoint = new ChargePoint(
 **Signature**
 
 ```ts
-async connect(): Promise<void>
+async connect(): Promise<Connection<CentralSystemAction<'v1.6-json'>>>
 ```
 
 ### sendRequest (method)
