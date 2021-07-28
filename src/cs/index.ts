@@ -88,7 +88,13 @@ type RequiredPick<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
  */
 export default class CentralSystem {
   private cpHandler: RequestHandler<ChargePointAction, RequestMetadata>;
-  private connections: Record<string, Connection<ChargePointAction>> = {};
+  /** each chargepoint has a list of connections because there is an
+   * issue with some chargers that do not fully close the previous websocket connection
+   * after creating a new websocket connection, with this we can still keep track of all
+   * current opened sockets, and only remove the connections whose sockets have closed.
+   *
+   * (for more info: see the test "if two sockets open before the first one closing, should still remain the latest socket") */
+  private connections: Record<string, Array<Connection<ChargePointAction>>> = {};
   private listeners: ConnectionListener[] = [];
   private websocketsServer: WebSocket.Server;
   private soapServer: soap.Server;
@@ -137,7 +143,8 @@ export default class CentralSystem {
 
       switch (args.ocppVersion) {
         case 'v1.6-json': {
-          const connection = this.connections[args.chargePointId];
+          // get the first available connection of this chargepoint
+          const [connection] = this.connections[args.chargePointId] ?? [];
           if (!connection) return Left(new OCPPRequestError('there is no connection to this charge point'));
 
           return connection
@@ -187,9 +194,6 @@ export default class CentralSystem {
     const normalizeHeaders = (headers: Record<string, string>) =>
       Object.entries(headers).reduce<Record<string, string>>((acc, [key, val]) => (acc[key.toLowerCase()] = val, acc), {});
 
-    server.addSoapHeader((action: any, args: any, headers: Record<string, string>) => ({
-      chargeBoxIdentity: normalizeHeaders(headers).chargeboxidentity
-    }), '', 'ocpp', 'urn://Ocpp/Cs/2012/06/');
     server.addSoapHeader((action: any, args: any, headers: any) => ({
       'Action': '/' + action + 'Response',
       'MessageID': uuid.v4(),
@@ -256,14 +260,19 @@ export default class CentralSystem {
       centralSystemActions,
       this.options.rejectInvalidRequests,
     );
-    this.connections[chargePointId] = connection;
+
+    if (!this.connections[chargePointId]) {
+      this.connections[chargePointId] = [];
+    }
+    this.connections[chargePointId].push(connection);
 
     socket.on('message', (data) => {
       this.options.onRawWebsocketData?.(data, metadata);
       connection.handleWebsocketData(data)
     });
     socket.on('close', () => {
-      delete this.connections[chargePointId];
+      const closedIndex = this.connections[chargePointId].findIndex(c => c === connection);
+      this.connections[chargePointId].splice(closedIndex, 1);
       clearInterval(pingInterval);
       this.listeners.forEach((f) => f(chargePointId, 'disconnected'));
     });
