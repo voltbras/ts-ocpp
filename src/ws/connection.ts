@@ -16,6 +16,12 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
     private readonly requestedActions: ReqAction[],
     private readonly respondedActions: ActionName<'v1.6-json'>[],
     private readonly rejectInvalidRequests: boolean = true,
+    private readonly handlers?: {
+      onReceiveRequest: (m: OCPPJMessage) => void,
+      onSendResponse: (m: OCPPJMessage) => void,
+      onSendRequest: (m: OCPPJMessage) => void,
+      onReceiveResponse: (m: OCPPJMessage) => void,
+    },
   ) { }
 
   public sendRequest<T extends ActionName<'v1.6-json'>>(action: T, { action: _, ocppVersion: __, ...payload }: Request<T, 'v1.6-json'>): EitherAsync<OCPPRequestError, Response<T, 'v1.6-json'>> {
@@ -28,22 +34,25 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
       if (validateResult.isLeft())
         return Left(new OCPPApplicationError(validateResult.extract().toString()))
 
-      await this.sendOCPPMessage({
+      const requestMessage = {
         id,
         type: MessageType.CALL,
         action,
         payload,
-      })
-      const message = await waitResponse;
+      } as const;
+      this.handlers?.onSendRequest(requestMessage);
+      await this.sendOCPPMessage(requestMessage);
+      const responseMessage = await waitResponse;
 
-      if (message.type === MessageType.CALL) return Left(
+      this.handlers?.onReceiveResponse(responseMessage);
+      if (responseMessage.type === MessageType.CALL) return Left(
         new OCPPRequestError('response received was of CALL type, should be either CALLRESULT or CALLERROR')
       );
-      if (message.type === MessageType.CALLERROR) return Left(
-        new OCPPRequestError('other side responded with error', message.errorCode, message.errorDescription, message.errorDetails)
+      if (responseMessage.type === MessageType.CALLERROR) return Left(
+        new OCPPRequestError('other side responded with error', responseMessage.errorCode, responseMessage.errorDescription, responseMessage.errorDetails)
       );
 
-      return Right(message.payload as Response<T, 'v1.6-json'>);
+      return Right(responseMessage.payload as Response<T, 'v1.6-json'>);
     })
   }
 
@@ -71,6 +80,7 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
     return MaybeAsync.fromPromise(async () => {
       switch (message.type) {
         case MessageType.CALL:
+          this.handlers?.onReceiveRequest(message);
           const response =
             await EitherAsync.liftEither(validateMessageRequest(message.action, message.payload ?? {}, this.requestedActions))
               .map<{
@@ -111,6 +121,7 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
                   id: message.id,
                   payload,
                 }));
+          this.handlers?.onSendResponse(formattedResponse);
           return Just(formattedResponse);
         case MessageType.CALLERROR:
         case MessageType.CALLRESULT:

@@ -13,7 +13,8 @@ const cs = new CentralSystem(8080, (req, metadata) => {
 }, {
   onRawSocketData: data => console.log(data.toString('ascii')),
   onRawSoapData: console.log,
-  onRawWebsocketData: (data, { chargePointId }) => console.log(chargePointId, data.toString())
+  onRawWebsocketData: (data, { chargePointId }) => console.log(chargePointId, data.toString()),
+  onWebsocketRequestResponse: (initiator, type, data, { chargePointId }) => console.log({ initiator, type, data, chargePointId }),
 });
 
 cs.addConnectionListener(console.log);

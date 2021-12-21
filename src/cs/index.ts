@@ -5,7 +5,7 @@ import WebSocket from 'ws';
 import { IncomingMessage, createServer, Server, ServerResponse } from 'http';
 import { ActionName, Request, RequestHandler, Response } from '../messages';
 import { ChargePointAction, chargePointActions } from '../messages/cp';
-import { Connection, SUPPORTED_PROTOCOLS } from '../ws';
+import { Connection, OCPPJMessage, SUPPORTED_PROTOCOLS } from '../ws';
 import { CentralSystemAction, centralSystemActions } from '../messages/cs';
 import { OCPPRequestError, ValidationError } from '../errors';
 import { EitherAsync, Left } from 'purify-ts';
@@ -30,6 +30,9 @@ export type RequestMetadata = {
   httpRequest: IncomingMessage;
   validationError?: ValidationError;
 };
+
+export type WebsocketRequestResponseListener =
+  (initiator: 'chargepoint' | 'central-system', type: 'request' | 'response', data: OCPPJMessage, metadata: Omit<RequestMetadata, 'validationError'>) => void;
 
 export type CSSendRequestArgs<T extends CentralSystemAction<V>, V extends OCPPVersion> = {
   ocppVersion: 'v1.6-json',
@@ -57,6 +60,8 @@ export type CentralSystemOptions = {
   onRawSocketData?: (data: Buffer) => void
   onRawSoapData?: (type: 'replied' | 'received', data: string) => void
   onRawWebsocketData?: (data: WebSocket.Data, metadata: Omit<RequestMetadata, 'validationError'>) => void,
+
+  onWebsocketRequestResponse?: WebsocketRequestResponseListener,
   /** in milliseconds */
   websocketPingInterval?: number
 }
@@ -259,6 +264,12 @@ export default class CentralSystem {
       chargePointActions,
       centralSystemActions,
       this.options.rejectInvalidRequests,
+      {
+        onReceiveRequest: message => this.options.onWebsocketRequestResponse?.('chargepoint', 'request', message, metadata),
+        onSendResponse: message => this.options.onWebsocketRequestResponse?.('chargepoint', 'response', message, metadata),
+        onReceiveResponse: message => this.options.onWebsocketRequestResponse?.('central-system', 'response', message, metadata),
+        onSendRequest: message => this.options.onWebsocketRequestResponse?.('central-system', 'request', message, metadata),
+      },
     );
 
     if (!this.connections[chargePointId]) {
