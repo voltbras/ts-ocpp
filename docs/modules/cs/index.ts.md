@@ -21,6 +21,7 @@ Sets up a central system, that can communicate with charge points
   - [CSSendRequestArgs (type alias)](#cssendrequestargs-type-alias)
   - [CentralSystemOptions (type alias)](#centralsystemoptions-type-alias)
   - [RequestMetadata (type alias)](#requestmetadata-type-alias)
+  - [WebsocketRequestResponseListener (type alias)](#websocketrequestresponselistener-type-alias)
 
 ---
 
@@ -128,6 +129,8 @@ export type CentralSystemOptions = {
   onRawSocketData?: (data: Buffer) => void
   onRawSoapData?: (type: 'replied' | 'received', data: string) => void
   onRawWebsocketData?: (data: WebSocket.Data, metadata: Omit<RequestMetadata, 'validationError'>) => void
+
+  onWebsocketRequestResponse?: WebsocketRequestResponseListener
   /** in milliseconds */
   websocketPingInterval?: number
 }
@@ -143,4 +146,17 @@ export type RequestMetadata = {
   httpRequest: IncomingMessage
   validationError?: ValidationError
 }
+```
+
+## WebsocketRequestResponseListener (type alias)
+
+**Signature**
+
+```ts
+export type WebsocketRequestResponseListener = (
+  initiator: 'chargepoint' | 'central-system',
+  type: 'request' | 'response',
+  data: OCPPJMessage,
+  metadata: Omit<RequestMetadata, 'validationError'>
+) => void
 ```
