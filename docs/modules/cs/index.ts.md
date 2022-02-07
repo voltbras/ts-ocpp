@@ -131,6 +131,7 @@ export type CentralSystemOptions = {
   onRawWebsocketData?: (data: WebSocket.Data, metadata: Omit<RequestMetadata, 'validationError'>) => void
 
   onWebsocketRequestResponse?: WebsocketRequestResponseListener
+  onWebsocketError?: (error: Error, metadata: Omit<RequestMetadata, 'validationError'>) => void
   /** in milliseconds */
   websocketPingInterval?: number
 }

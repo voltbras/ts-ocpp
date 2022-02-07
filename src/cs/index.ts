@@ -62,6 +62,7 @@ export type CentralSystemOptions = {
   onRawWebsocketData?: (data: WebSocket.Data, metadata: Omit<RequestMetadata, 'validationError'>) => void,
 
   onWebsocketRequestResponse?: WebsocketRequestResponseListener,
+  onWebsocketError?: (error: Error, metadata: Omit<RequestMetadata, 'validationError'>) => void,
   /** in milliseconds */
   websocketPingInterval?: number
 }
@@ -251,7 +252,7 @@ export default class CentralSystem {
 
     const metadata: RequestMetadata = { chargePointId, httpRequest };
 
-    function noop() { };
+    function noop() { }
     const pingInterval = setInterval(() => {
       socket.ping(noop);
     }, this.options.websocketPingInterval);
@@ -277,6 +278,9 @@ export default class CentralSystem {
     }
     this.connections[chargePointId].push(connection);
 
+    socket.on('error', (error) => {
+      this.options.onWebsocketError?.(error, metadata);
+    });
     socket.on('message', (data) => {
       this.options.onRawWebsocketData?.(data, metadata);
       connection.handleWebsocketData(data)
