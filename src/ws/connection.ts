@@ -45,6 +45,8 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
       this.handlers?.onSendRequest(requestMessage);
       await this.sendOCPPMessage(requestMessage);
       const responseMessage = await waitResponse;
+      // cleanup function to avoid memory leak
+      delete this.messageTriggers[id];
 
       this.handlers?.onReceiveResponse(responseMessage);
       if (responseMessage.type === MessageType.CALL) return Left(
