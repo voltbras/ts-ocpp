@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 import { parseOCPPMessage, stringifyOCPPMessage } from './format';
 import { MessageType, OCPPJMessage } from './types';
 import { ActionName, Request, RequestHandler, Response } from '../messages';
-import { OCPPApplicationError, OCPPRequestError, ValidationError } from '../errors/index';
+import { OCPPApplicationError, OCPPRequestError, OCPPRequestTimedOutError, ValidationError } from '../errors/index';
 import { validateMessageRequest } from '../messages/validation';
 import * as uuid from 'uuid';
 import { EitherAsync, Left, Right, Just, Nothing, MaybeAsync } from 'purify-ts';
@@ -22,13 +22,15 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
       onSendRequest: (m: OCPPJMessage) => void,
       onReceiveResponse: (m: OCPPJMessage) => void,
     },
+    private readonly requestTimeout?: number,
   ) { }
 
   public sendRequest<T extends ActionName<'v1.6-json'>>(action: T, { action: _, ocppVersion: __, ...payload }: Request<T, 'v1.6-json'>): EitherAsync<OCPPRequestError, Response<T, 'v1.6-json'>> {
     return EitherAsync.fromPromise(async () => {
       const id = uuid.v4();
-      const waitResponse: Promise<OCPPJMessage> = new Promise(resolve => {
+      const waitResponse: Promise<OCPPJMessage> = new Promise((resolve, reject) => {
         this.messageTriggers[id] = resolve;
+        setTimeout(() => reject(new OCPPRequestTimedOutError(action)), this.requestTimeout ?? 30_000);
       });
       const validateResult = validateMessageRequest(action, payload, this.respondedActions);
       if (validateResult.isLeft())

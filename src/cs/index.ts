@@ -64,7 +64,8 @@ export type CentralSystemOptions = {
   onWebsocketRequestResponse?: WebsocketRequestResponseListener,
   onWebsocketError?: (error: Error, metadata: Omit<RequestMetadata, 'validationError'>) => void,
   /** in milliseconds */
-  websocketPingInterval?: number
+  websocketPingInterval?: number,
+  websocketRequestTimeout?: number,
 }
 
 type RequiredPick<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
@@ -277,6 +278,7 @@ export default class CentralSystem {
         onReceiveResponse: message => this.options.onWebsocketRequestResponse?.('central-system', 'response', message, metadata),
         onSendRequest: message => this.options.onWebsocketRequestResponse?.('central-system', 'request', message, metadata),
       },
+      this.options.websocketRequestTimeout,
     );
 
     if (!this.connections[chargePointId]) {

@@ -16,6 +16,12 @@ export class ValidationError extends GenericError {
 export class OCPPApplicationError extends GenericError {
   name = "OCPPApplicationError";
 }
+export class OCPPRequestTimedOutError extends OCPPApplicationError {
+  name = "OCPPRequestTimedOutError";
+  constructor(readonly action: string) {
+    super('OCPP request timed out');
+  }
+}
 
 export class OCPPRequestError extends GenericError {
   name = "OCPPRequestError";
@@ -25,6 +31,7 @@ export class OCPPRequestError extends GenericError {
     readonly errorDescription?: string,
     readonly errorDetails?: object
   ) {
-    super();
+    super(message);
   }
 }
+

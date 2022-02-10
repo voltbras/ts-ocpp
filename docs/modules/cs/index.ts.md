@@ -77,7 +77,7 @@ public addConnectionListener(listener: ConnectionListener)
 **Signature**
 
 ```ts
-public close()
+public close(): Promise<void>
 ```
 
 ### sendRequest (method)
@@ -134,6 +134,7 @@ export type CentralSystemOptions = {
   onWebsocketError?: (error: Error, metadata: Omit<RequestMetadata, 'validationError'>) => void
   /** in milliseconds */
   websocketPingInterval?: number
+  websocketRequestTimeout?: number
 }
 ```
 
