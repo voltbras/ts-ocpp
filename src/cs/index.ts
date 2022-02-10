@@ -135,9 +135,10 @@ export default class CentralSystem {
     this.listeners.push(listener);
   }
 
-  public close() {
-    this.httpServer.close();
-    this.websocketsServer.close();
+  public close(): Promise<void> {
+    const httpClosing = new Promise(resolve => this.httpServer.close(resolve));
+    const wsClosing = new Promise(resolve => this.websocketsServer.close(resolve));
+    return Promise.all([httpClosing, wsClosing]).then(() => { });
   }
 
   sendRequest<V extends OCPPVersion, T extends CentralSystemAction>(args: CSSendRequestArgs<T, V>): EitherAsync<OCPPRequestError, Response<T, V>> {
@@ -252,8 +253,13 @@ export default class CentralSystem {
 
     const metadata: RequestMetadata = { chargePointId, httpRequest };
 
+    let isAlive = true;
+    socket.on('pong', () => isAlive = true);
     function noop() { }
     const pingInterval = setInterval(() => {
+      if (isAlive === false)
+        return socket.terminate();
+      isAlive = false;
       socket.ping(noop);
     }, this.options.websocketPingInterval);
 
