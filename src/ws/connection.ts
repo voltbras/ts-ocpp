@@ -29,8 +29,11 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
     return EitherAsync.fromPromise(async () => {
       const id = uuid.v4();
       const waitResponse: Promise<OCPPJMessage> = new Promise((resolve, reject) => {
-        this.messageTriggers[id] = resolve;
-        setTimeout(() => reject(new OCPPRequestTimedOutError(action)), this.requestTimeout ?? 30_000);
+        const timeoutId = setTimeout(() => reject(new OCPPRequestTimedOutError(action)), 30_000);
+        this.messageTriggers[id] = function (ocppMessage) {
+          resolve(ocppMessage);
+          clearTimeout(timeoutId);
+        };
       });
       const validateResult = validateMessageRequest(action, payload, this.respondedActions);
       if (validateResult.isLeft())
