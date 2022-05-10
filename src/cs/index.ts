@@ -2,7 +2,7 @@
  * Sets up a central system, that can communicate with charge points
  */
 import WebSocket from 'ws';
-import { IncomingMessage, createServer, Server, ServerResponse } from 'http';
+import { IncomingMessage, createServer, Server } from 'http';
 import { ActionName, Request, RequestHandler, Response } from '../messages';
 import { ChargePointAction, chargePointActions } from '../messages/cp';
 import { Connection, OCPPJMessage, SUPPORTED_PROTOCOLS } from '../ws';
@@ -66,6 +66,9 @@ export type CentralSystemOptions = {
   /** in milliseconds */
   websocketPingInterval?: number,
   websocketRequestTimeout?: number,
+
+  /** can be used to authorize websockets before the socket formation */
+  websocketAuthorizer?: (metadata: RequestMetadata) => Promise<boolean> | boolean,
 }
 
 type RequiredPick<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
@@ -106,7 +109,7 @@ export default class CentralSystem {
   private websocketsServer: WebSocket.Server;
   private soapServer: soap.Server;
   private httpServer: Server;
-  private options: RequiredPick<CentralSystemOptions, 'websocketPingInterval' | 'rejectInvalidRequests'>;
+  private options: RequiredPick<CentralSystemOptions, 'websocketPingInterval' | 'rejectInvalidRequests' | 'websocketAuthorizer'>;
 
   constructor(
     port: number,
@@ -118,7 +121,8 @@ export default class CentralSystem {
     this.options = {
       ...options,
       rejectInvalidRequests: options.rejectInvalidRequests ?? true,
-      websocketPingInterval: 30_000
+      websocketPingInterval: 30_000,
+      websocketAuthorizer: options.websocketAuthorizer ?? (() => true),
     };
 
     this.httpServer = createServer();
@@ -212,10 +216,35 @@ export default class CentralSystem {
 
   /** @internal */
   private setupWebsocketsServer(): WebSocket.Server {
-    const server = new WebSocket.Server({ server: this.httpServer, handleProtocols });
+    const server = new WebSocket.Server({ handleProtocols, noServer: true });
     server.on('error', console.error);
     server.on('upgrade', console.info);
-    server.on('connection', (socket, request) => this.handleConnection(socket, request));
+    server.on('connection', (socket: WebSocket, _request: IncomingMessage, metadata: RequestMetadata) => this.handleConnection(socket, metadata));
+    
+    /** validate all pre-requisites before upgrading the websocket connection */
+    this.httpServer.on('upgrade', async (httpRequest, socket, head) => {
+      if (!httpRequest.headers['sec-websocket-protocol']) {
+        socket.destroy();
+        return;
+      }
+      const chargePointId = httpRequest.url?.split('/').pop();
+      if (!chargePointId) {
+        socket.destroy();
+        return;
+      }
+      const metadata: RequestMetadata = { chargePointId, httpRequest };
+      try {
+        const authorized = await this.options.websocketAuthorizer(metadata);
+        if (!authorized) throw new Error('not authorized');
+      } catch (error) {
+        socket.destroy();
+        return;
+      }
+
+      server.handleUpgrade(httpRequest, socket, head, function done(socket) {
+        server.emit('connection', socket, httpRequest, metadata);
+      });
+    });
     return server;
   }
 
@@ -239,20 +268,9 @@ export default class CentralSystem {
   }
 
   /** @internal */
-  private handleConnection(socket: WebSocket, httpRequest: IncomingMessage) {
-    if (!socket.protocol) {
-      socket.close();
-      return;
-    }
-    const chargePointId = httpRequest.url?.split('/').pop();
-    if (!chargePointId) {
-      socket.close();
-      return;
-    }
-
+  private async handleConnection(socket: WebSocket, metadata: RequestMetadata) {
+    const { chargePointId } = metadata;
     this.listeners.forEach((f) => f(chargePointId, 'connected'));
-
-    const metadata: RequestMetadata = { chargePointId, httpRequest };
 
     let isAlive = true;
     socket.on('pong', () => isAlive = true);
