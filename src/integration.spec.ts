@@ -155,7 +155,7 @@ describe('test cs<->cp communication', () => {
 
     // connecting twice
     waitCentralSystem = waitForConnection(cp.id);
-    const secondConnection = await cp.connect();
+    const _secondConnection = await cp.connect();
     await waitCentralSystem;
 
     waitCentralSystem = waitForDisconnection(cp.id);

@@ -2,7 +2,7 @@
  * Sets up a central system, that can communicate with charge points
  */
 import WebSocket from 'ws';
-import { IncomingMessage, createServer, Server, ServerResponse } from 'http';
+import { IncomingMessage, createServer, Server } from 'http';
 import { ActionName, Request, RequestHandler, Response } from '../messages';
 import { ChargePointAction, chargePointActions } from '../messages/cp';
 import { Connection, OCPPJMessage, SUPPORTED_PROTOCOLS } from '../ws';
@@ -220,6 +220,8 @@ export default class CentralSystem {
     server.on('error', console.error);
     server.on('upgrade', console.info);
     server.on('connection', (socket: WebSocket, _request: IncomingMessage, metadata: RequestMetadata) => this.handleConnection(socket, metadata));
+    
+    /** validate all pre-requisites before upgrading the websocket connection */
     this.httpServer.on('upgrade', async (httpRequest, socket, head) => {
       if (!httpRequest.headers['sec-websocket-protocol']) {
         socket.destroy();
