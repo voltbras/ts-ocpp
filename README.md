@@ -69,3 +69,7 @@ sending a request to the central system(see central system's section to understa
 ```typescript
 const response = await chargepoint.sendRequest({ action: 'Heartbeat', ocppVersion: '1.6-json', payload: {} );
 ```
+
+### troubleshooting
+
+Set the environment variable `DEBUG` to `ts-ocpp:*` to enable troubleshooting.

@@ -1,7 +1,6 @@
 import CentralSystem from '../src/cs';
 
 const cs = new CentralSystem(8080, (req, metadata) => {
-  console.log('new request from: ', metadata.chargePointId)
   const { ocppVersion } = req;
   switch (req.action) {
     case 'Heartbeat':
@@ -10,14 +9,7 @@ const cs = new CentralSystem(8080, (req, metadata) => {
       return { action: req.action, ocppVersion };
   }
   throw new Error('not supported');
-}, {
-  onRawSocketData: data => console.log(data.toString('ascii')),
-  onRawSoapData: console.log,
-  onRawWebsocketData: (data, { chargePointId }) => console.log(chargePointId, data.toString()),
-  onWebsocketRequestResponse: (initiator, type, data, { chargePointId }) => console.log({ initiator, type, data, chargePointId }),
 });
-
-cs.addConnectionListener(console.log);
 
 console.log('server started');
 

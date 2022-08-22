@@ -6,6 +6,8 @@ import { OCPPApplicationError, OCPPRequestError, OCPPRequestTimedOutError, Valid
 import { validateMessageRequest } from '../messages/validation';
 import * as uuid from 'uuid';
 import { EitherAsync, Left, Right, Just, Nothing, MaybeAsync } from 'purify-ts';
+import Debug from "debug";
+const debug = Debug("ts-ocpp:ws");
 
 
 export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
@@ -35,9 +37,12 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
           clearTimeout(timeoutId);
         };
       });
+      debug(`preparing to send request ${action} with id ${id}`);
       const validateResult = validateMessageRequest(action, payload, this.respondedActions);
-      if (validateResult.isLeft())
+      if (validateResult.isLeft()) {
+        debug(`request ${action} with id ${id} is invalid: ${validateResult.extract().toString()}`);
         return Left(new OCPPApplicationError(validateResult.extract().toString()))
+      }
 
       const requestMessage = {
         id,
@@ -45,9 +50,11 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
         action,
         payload,
       } as const;
+      debug(`sending request %o`, requestMessage);
       this.handlers?.onSendRequest(requestMessage);
       await this.sendOCPPMessage(requestMessage);
       const responseMessage = await waitResponse;
+      debug(`received response %o`, responseMessage);
       // cleanup function to avoid memory leak
       delete this.messageTriggers[id];
 
@@ -85,6 +92,7 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
 
   private handleOCPPMessage(message: OCPPJMessage): MaybeAsync<OCPPJMessage> {
     return MaybeAsync.fromPromise(async () => {
+      debug(`received message %o`, message);
       switch (message.type) {
         case MessageType.CALL:
           this.handlers?.onReceiveRequest(message);
@@ -107,7 +115,7 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
                 try {
                   const response = await this.requestHandler(request, validationError);
                   return Right(response);
-                } catch (error) {
+                } catch (error: any) {
                   return Left(new OCPPApplicationError('on handling chargepoint request').wrap(error));
                 }
               });
