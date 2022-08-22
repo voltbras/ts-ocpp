@@ -1,7 +1,7 @@
 {
   "name": "@voltbras/ts-ocpp",
   "description": "OCPP (Open Charge Point Protocol) implemented in Typescript",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "homepage": "https://github.com/voltbras/ts-ocpp",
