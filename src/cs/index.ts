@@ -16,6 +16,8 @@ import * as uuid from 'uuid';
 import { IServices, ISoapServiceMethod } from 'soap';
 import { OCPPVersion } from '../types';
 import SOAPConnection from '../soap/connection';
+import Debug from "debug";
+const debug = Debug("ts-ocpp:cs");
 
 const handleProtocols = (protocols: string[]): string =>
   protocols.find((protocol) => SUPPORTED_PROTOCOLS.includes(protocol)) ?? '';
@@ -124,11 +126,17 @@ export default class CentralSystem {
       websocketPingInterval: 30_000,
       websocketAuthorizer: options.websocketAuthorizer ?? (() => true),
     };
+    debug('creating central system on port %d - options: %o', port, this.options);
 
     this.httpServer = createServer();
+    const httpDebug = debug.extend('http');
     this.httpServer.on('connection', socket => {
-      options.onRawSocketData &&
-        socket.on('data', data => options.onRawSocketData?.(data));
+      httpDebug('new http connection');
+      socket.on('data', data => {
+        httpDebug('http connection received data:\n%s', data.toString('ascii'));
+        if (options.onRawSocketData)
+          options.onRawSocketData?.(data);
+      });
     })
     this.httpServer.listen(port, host);
 
@@ -149,15 +157,21 @@ export default class CentralSystem {
   sendRequest<V extends OCPPVersion, T extends CentralSystemAction>(args: CSSendRequestArgs<T, V>): EitherAsync<OCPPRequestError, Response<T, V>> {
     return EitherAsync.fromPromise(async () => {
       const { chargePointId, payload, action } = args;
+      const cpDebug = debug.extend(chargePointId);
       if (!chargePointId) return Left(new OCPPRequestError('charge point id was not provided'));
       // @ts-ignore - TS somehow doesn't understand that this is right
       const request: Request<T, V> = { ...payload, action, ocppVersion: args.ocppVersion };
 
+      cpDebug('sending request: %o', request);
       switch (args.ocppVersion) {
         case 'v1.6-json': {
           // get the first available connection of this chargepoint
+          cpDebug('getting connection from list of %d connections', this.connections[chargePointId]?.length);
           const [connection] = this.connections[args.chargePointId] ?? [];
-          if (!connection) return Left(new OCPPRequestError('there is no connection to this charge point'));
+          if (!connection) {
+            cpDebug('no connection found, rejecting request');
+            return Left(new OCPPRequestError('there is no connection to this charge point'));
+          }
 
           return connection
             .sendRequest(
@@ -217,31 +231,43 @@ export default class CentralSystem {
   /** @internal */
   private setupWebsocketsServer(): WebSocket.Server {
     const server = new WebSocket.Server({ handleProtocols, noServer: true });
-    server.on('error', console.error);
-    server.on('upgrade', console.info);
+    server.on('error', (error) => {
+      debug('websocket error: %s', error.message);
+    });
+    server.on('upgrade', (request, _socket, _head) => {
+      debug('websocket upgrade: %s', request.url);
+    });
     server.on('connection', (socket: WebSocket, _request: IncomingMessage, metadata: RequestMetadata) => this.handleConnection(socket, metadata));
     
     /** validate all pre-requisites before upgrading the websocket connection */
     this.httpServer.on('upgrade', async (httpRequest, socket, head) => {
+      debug('websocket upgrade: %s', httpRequest.url);
       if (!httpRequest.headers['sec-websocket-protocol']) {
+        debug('websocket upgrade: no websocket protocol header, rejecting connection');
         socket.destroy();
         return;
       }
       const chargePointId = httpRequest.url?.split('/').pop();
       if (!chargePointId) {
+        debug('websocket upgrade: no charge point id(original url: %s), rejecting connection', httpRequest.url);
         socket.destroy();
         return;
       }
+      const cpDebug = debug.extend(chargePointId);
       const metadata: RequestMetadata = { chargePointId, httpRequest };
       try {
+        cpDebug('websocket upgrade: authorizing connection');
         const authorized = await this.options.websocketAuthorizer(metadata);
+        cpDebug('websocket upgrade: authorization result: %s', authorized);
         if (!authorized) throw new Error('not authorized');
-      } catch (error) {
+      } catch (error: any) {
+        cpDebug('websocket upgrade: authorization error: %s', error.message);
         socket.destroy();
         return;
       }
 
       server.handleUpgrade(httpRequest, socket, head, function done(socket) {
+        cpDebug('websocket upgrade: connection established');
         server.emit('connection', socket, httpRequest, metadata);
       });
     });
@@ -270,15 +296,23 @@ export default class CentralSystem {
   /** @internal */
   private async handleConnection(socket: WebSocket, metadata: RequestMetadata) {
     const { chargePointId } = metadata;
+    const cpDebug = debug.extend(chargePointId);
+    cpDebug('websocket connection: handling connection');
     this.listeners.forEach((f) => f(chargePointId, 'connected'));
 
     let isAlive = true;
-    socket.on('pong', () => isAlive = true);
+    socket.on('pong', () => {
+      cpDebug('websocket connection: received pong');
+      isAlive = true;
+    });
     function noop() { }
     const pingInterval = setInterval(() => {
-      if (isAlive === false)
+      if (isAlive === false) {
+        cpDebug('websocket connection: connection is dead, closing');
         return socket.terminate();
+      }
       isAlive = false;
+      cpDebug('websocket connection: sending ping');
       socket.ping(noop);
     }, this.options.websocketPingInterval);
 
@@ -300,18 +334,24 @@ export default class CentralSystem {
     );
 
     if (!this.connections[chargePointId]) {
+      cpDebug('websocket connection: creating new connection list entry');
       this.connections[chargePointId] = [];
+    } else {
+      cpDebug('websocket connection: adding to existing connection list entry(previous list length: %d)', this.connections[chargePointId].length);
     }
     this.connections[chargePointId].push(connection);
 
     socket.on('error', (error) => {
+      cpDebug('websocket connection: socket error: %s', error.message);
       this.options.onWebsocketError?.(error, metadata);
     });
     socket.on('message', (data) => {
+      cpDebug('websocket connection: received message: %s', data);
       this.options.onRawWebsocketData?.(data, metadata);
       connection.handleWebsocketData(data)
     });
     socket.on('close', () => {
+      cpDebug('websocket connection: closing conection');
       const closedIndex = this.connections[chargePointId].findIndex(c => c === connection);
       this.connections[chargePointId].splice(closedIndex, 1);
       clearInterval(pingInterval);
