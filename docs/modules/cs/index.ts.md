@@ -135,6 +135,9 @@ export type CentralSystemOptions = {
   /** in milliseconds */
   websocketPingInterval?: number
   websocketRequestTimeout?: number
+
+  /** can be used to authorize websockets before the socket formation */
+  websocketAuthorizer?: (metadata: RequestMetadata) => Promise<boolean> | boolean
 }
 ```
 

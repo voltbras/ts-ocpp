@@ -10,11 +10,11 @@
   "license": "MIT",
   "scripts": {
     "test": "jest",
-    "build": "tsc && npm run copy-assets",
-    "copy-assets": "npm run copy-assets-wsdl && npm run copy-assets-jsonschema",
+    "build": "tsc && yarn copy-assets && yarn docs-ts",
+    "copy-assets": "yarn copy-assets-wsdl && yarn copy-assets-jsonschema",
     "copy-assets-wsdl": "cp ./src/messages/soap/*.wsdl ./dist/messages/soap",
     "copy-assets-jsonschema": "cp -R ./src/messages/json ./dist/messages/json",
-    "prepare": "npm run build",
+    "prepare": "yarn build",
     "prepublishOnly": "npm test && yarn docs-ts",
     "postversion": "git push && git push --tags",
     "lint": "eslint . --ext .js,.ts"
