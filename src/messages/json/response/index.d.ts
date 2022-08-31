@@ -7,10 +7,9 @@
 
 export interface AuthorizeResponse {
   idTagInfo: {
-    status: "Accepted" | "Blocked" | "Expired" | "Invalid" | "ConcurrentTx";
     expiryDate?: string;
     parentIdTag?: string;
-    [k: string]: unknown;
+    status: "Accepted" | "Blocked" | "Expired" | "Invalid" | "ConcurrentTx";
   };
 }
 /* tslint:disable */
@@ -121,10 +120,8 @@ export interface GetCompositeScheduleResponse {
       startPeriod: number;
       limit: number;
       numberPhases?: number;
-      [k: string]: unknown;
     }[];
     minChargingRate?: number;
-    [k: string]: unknown;
   };
 }
 /* tslint:disable */
@@ -139,7 +136,6 @@ export interface GetConfigurationResponse {
     key: string;
     readonly: boolean;
     value?: string;
-    [k: string]: unknown;
   }[];
   unknownKey?: string[];
 }
@@ -253,7 +249,6 @@ export interface StartTransactionResponse {
     expiryDate?: string;
     parentIdTag?: string;
     status: "Accepted" | "Blocked" | "Expired" | "Invalid" | "ConcurrentTx";
-    [k: string]: unknown;
   };
   transactionId: number;
 }
@@ -277,7 +272,6 @@ export interface StopTransactionResponse {
     expiryDate?: string;
     parentIdTag?: string;
     status: "Accepted" | "Blocked" | "Expired" | "Invalid" | "ConcurrentTx";
-    [k: string]: unknown;
   };
 }
 /* tslint:disable */
