@@ -202,7 +202,7 @@ export default class CentralSystem {
         )
       }
     };
-    const xml = fs.readFileSync(path.resolve(__dirname, '../messages/soap/ocpp_centralsystemservice_1.5_final.wsdl'), 'utf8');
+    const xml = fs.readFileSync(path.resolve(__dirname, '../messages/soap/OCPP_CentralSystemService_1.6.wsdl'), 'utf8');
     const server = soap.listen(this.httpServer, {
       services,
       path: '/',
