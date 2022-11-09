@@ -174,4 +174,20 @@ describe('test cs<->cp communication', () => {
     cp.close();
     cs.close()
   })
+
+  it('should return chargePointIds', async () => {
+    const PORT = 8083;
+    const cs = new CentralSystem(PORT, (_req, _cpId) => {
+      throw new Error('cs');
+    });
+
+    const cp = new ChargePoint(
+      '123',
+      () => { throw new Error('123') },
+      `ws://localhost:${PORT}`
+    );
+    await connect(cp, cs);
+    expect(cs.getChargePointIds()).toStrictEqual(['123']);
+
+  });
 });

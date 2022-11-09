@@ -95,7 +95,7 @@ type RequiredPick<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
  *   }
  *   throw new Error('message not supported');
  * });
- * 
+ *
  * @category Central System
  */
 export default class CentralSystem {
@@ -146,6 +146,10 @@ export default class CentralSystem {
 
   public addConnectionListener(listener: ConnectionListener) {
     this.listeners.push(listener);
+  }
+
+  public getChargePointIds(): string[] {
+    return Object.keys(this.connections);
   }
 
   public close(): Promise<void> {
@@ -238,7 +242,7 @@ export default class CentralSystem {
       debug('websocket upgrade: %s', request.url);
     });
     server.on('connection', (socket: WebSocket, _request: IncomingMessage, metadata: RequestMetadata) => this.handleConnection(socket, metadata));
-    
+
     /** validate all pre-requisites before upgrading the websocket connection */
     this.httpServer.on('upgrade', async (httpRequest, socket, head) => {
       debug('websocket upgrade: %s', httpRequest.url);
