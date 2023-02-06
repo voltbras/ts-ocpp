@@ -3,6 +3,7 @@
  */
 import WebSocket from 'ws';
 import { IncomingMessage, createServer, Server } from 'http';
+import { Duplex } from 'stream';
 import { ActionName, Request, RequestHandler, Response } from '../messages';
 import { ChargePointAction, chargePointActions } from '../messages/cp';
 import { Connection, OCPPJMessage, SUPPORTED_PROTOCOLS } from '../ws';
@@ -71,6 +72,7 @@ export type CentralSystemOptions = {
 
   /** can be used to authorize websockets before the socket formation */
   websocketAuthorizer?: (metadata: RequestMetadata) => Promise<boolean> | boolean,
+  chargePointIdExtractor?: (httpRequest: IncomingMessage) => string | undefined,
 }
 
 type RequiredPick<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
@@ -111,7 +113,7 @@ export default class CentralSystem {
   private websocketsServer: WebSocket.Server;
   private soapServer: soap.Server;
   private httpServer: Server;
-  private options: RequiredPick<CentralSystemOptions, 'websocketPingInterval' | 'rejectInvalidRequests' | 'websocketAuthorizer'>;
+  private options: RequiredPick<CentralSystemOptions, 'websocketPingInterval' | 'rejectInvalidRequests' | 'websocketAuthorizer' | 'chargePointIdExtractor'>;
 
   constructor(
     port: number,
@@ -125,6 +127,7 @@ export default class CentralSystem {
       rejectInvalidRequests: options.rejectInvalidRequests ?? true,
       websocketPingInterval: 30_000,
       websocketAuthorizer: options.websocketAuthorizer ?? (() => true),
+      chargePointIdExtractor: options.chargePointIdExtractor ?? ((httpRequest) => httpRequest.url?.split('/').pop()),
     };
     debug('creating central system on port %d - options: %o', port, this.options);
 
@@ -240,14 +243,14 @@ export default class CentralSystem {
     server.on('connection', (socket: WebSocket, _request: IncomingMessage, metadata: RequestMetadata) => this.handleConnection(socket, metadata));
     
     /** validate all pre-requisites before upgrading the websocket connection */
-    this.httpServer.on('upgrade', async (httpRequest, socket, head) => {
+    this.httpServer.on('upgrade', async (httpRequest: IncomingMessage, socket, head: Buffer) => {
       debug('websocket upgrade: %s', httpRequest.url);
       if (!httpRequest.headers['sec-websocket-protocol']) {
         debug('websocket upgrade: no websocket protocol header, rejecting connection');
         socket.destroy();
         return;
       }
-      const chargePointId = httpRequest.url?.split('/').pop();
+      const chargePointId = this.options.chargePointIdExtractor(httpRequest);
       if (!chargePointId) {
         debug('websocket upgrade: no charge point id(original url: %s), rejecting connection', httpRequest.url);
         socket.destroy();

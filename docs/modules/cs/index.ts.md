@@ -138,6 +138,7 @@ export type CentralSystemOptions = {
 
   /** can be used to authorize websockets before the socket formation */
   websocketAuthorizer?: (metadata: RequestMetadata) => Promise<boolean> | boolean
+  chargePointIdExtractor?: (httpRequest: IncomingMessage) => string | undefined
 }
 ```
 
