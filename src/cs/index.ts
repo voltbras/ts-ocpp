@@ -3,7 +3,6 @@
  */
 import WebSocket from 'ws';
 import { IncomingMessage, createServer, Server } from 'http';
-import { Duplex } from 'stream';
 import { ActionName, Request, RequestHandler, Response } from '../messages';
 import { ChargePointAction, chargePointActions } from '../messages/cp';
 import { Connection, OCPPJMessage, SUPPORTED_PROTOCOLS } from '../ws';
