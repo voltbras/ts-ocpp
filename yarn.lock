@@ -617,7 +617,7 @@
     jest-diff "^26.0.0"
     pretty-format "^26.0.0"
 
-"@types/json-schema@^7.0.3", "@types/json-schema@^7.0.4":
+"@types/json-schema@7.0.7", "@types/json-schema@^7.0.3", "@types/json-schema@^7.0.4":
   version "7.0.7"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.7.tgz#98a993516c859eb0d5c4c8f098317a9ea68db9ad"
   integrity sha512-cxWFQVseBm6O9Gbw1IWb8r6OS4OhSt3hPZLkFApLjM8TEXROBuQGLAH2i2gZpcXdLBIrpXuTDhH7Vbm1iXmNGA==
@@ -745,6 +745,17 @@
   dependencies:
     "@typescript-eslint/types" "4.21.0"
     eslint-visitor-keys "^2.0.0"
+
+"@voltbras/ts-ocpp@^2.7.3":
+  version "2.7.3"
+  resolved "https://registry.yarnpkg.com/@voltbras/ts-ocpp/-/ts-ocpp-2.7.3.tgz#593a40662b4503bf6db930f0fe8c2d7e99baf2f1"
+  integrity sha512-ArlGLdKyj1CsgRdgy9UN++MRNqS9OhmLNAsIFn2m2ct17j0f0TqKg0sUFNglfqE03OHZYXZeCJtE7lcOrs6Q9w==
+  dependencies:
+    jsonschema "^1.4.0"
+    purify-ts "^0.16.1"
+    soap "^0.37.0"
+    uuid "^8.3.2"
+    ws "^7.4.4"
 
 abab@^2.0.3:
   version "2.0.5"
@@ -3590,6 +3601,13 @@ purify-ts@^0.16.1:
   integrity sha512-BX0Su8dRitLCDcgf8hxsAdr2BVWdf/C4ObVn2tPx6n6r4ys9IqDidaAWXUgqT/EHe5+9Z+uaZnQ/x4xxiMzQRw==
   dependencies:
     "@types/json-schema" "^7.0.4"
+
+purify-ts@^0.16.2:
+  version "0.16.3"
+  resolved "https://registry.yarnpkg.com/purify-ts/-/purify-ts-0.16.3.tgz#be85f939b4c1365f38c1c8c44fdfbd3145ecae0c"
+  integrity sha512-ZEmLC0myQiV672QM5ZD//KyoCDXQltBvdR9q12NUk5d1tS1d7paut0U8/13Xl4dJ/pA1JYJg6gHhoiaqy2O1bg==
+  dependencies:
+    "@types/json-schema" "7.0.7"
 
 qs@~6.5.2:
   version "6.5.2"

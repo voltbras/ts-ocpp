@@ -213,6 +213,17 @@ See: http://ev-services.net/ocpp/
 
       <s:complexType name="UpdateFirmwareResponse"></s:complexType>
 
+      <s:complexType name="SetChargingProfileRequest">
+        <s:sequence>
+          <s:element name="retrieveDate" type="s:dateTime" minOccurs="1" maxOccurs="1" />
+          <s:element name="location" type="s:anyURI" minOccurs="1" maxOccurs="1" />
+          <s:element name="retries" type="s:int" minOccurs="0" maxOccurs="1" />
+          <s:element name="retryInterval" type="s:int" minOccurs="0" maxOccurs="1" />
+        </s:sequence>
+      </s:complexType>
+
+      <s:complexType name="SetChargingProfileResponse"></s:complexType>
+
       <s:complexType name="ChangeConfigurationRequest">
         <s:annotation>
           <s:documentation>Defines the ChangeConfiguration.req PDU</s:documentation>
@@ -502,6 +513,9 @@ See: http://ev-services.net/ocpp/
       <s:element name="reserveNowResponse" type="tns:ReserveNowResponse" />
       <s:element name="sendLocalListRequest" type="tns:SendLocalListRequest" />
       <s:element name="sendLocalListResponse" type="tns:SendLocalListResponse" />
+      <s:element name="SetChargingProfileRequest" type="tns:SetChargingProfileRequest" />
+      <s:element name="SetChargingProfileResponse" type="tns:SetChargingProfileResponse" />
+      
     </s:schema>
   </wsdl:types>
 
@@ -555,6 +569,14 @@ See: http://ev-services.net/ocpp/
 
   <wsdl:message name="UpdateFirmwareOutput">
     <wsdl:part name="parameters" element="tns:updateFirmwareResponse" />
+  </wsdl:message>
+
+  <wsdl:message name="SetChargingProfileInput">
+    <wsdl:part name="parameters" element="tns:SetChargingProfileRequest" />
+  </wsdl:message>
+
+  <wsdl:message name="SetChargingProfileOutput">
+    <wsdl:part name="parameters" element="tns:SetChargingProfileResponse" />
   </wsdl:message>
 
   <wsdl:message name="ChangeConfigurationInput">
@@ -659,6 +681,11 @@ See: http://ev-services.net/ocpp/
     <wsdl:operation name="UpdateFirmware">
       <wsdl:input message="tns:UpdateFirmwareInput" wsaw:Action="/UpdateFirmware" />
       <wsdl:output message="tns:UpdateFirmwareOutput" wsaw:Action="/UpdateFirmwareResponse" />
+    </wsdl:operation>
+
+    <wsdl:operation name="SetChargingProfile">
+      <wsdl:input message="tns:SetChargingProfileInput" wsaw:Action="/SetChargingProfile" />
+      <wsdl:output message="tns:SetChargingProfileOutput" wsaw:Action="/SetChargingProfileResponse" />
     </wsdl:operation>
 
     <wsdl:operation name="ChangeConfiguration">
@@ -770,6 +797,17 @@ See: http://ev-services.net/ocpp/
 
     <wsdl:operation name="UpdateFirmware">
       <soap12:operation soapAction="/UpdateFirmware" style="document" />
+      <wsdl:input>
+        <soap12:header use="literal" message="tns:Header" part="ChargeBoxIdentity" />
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="SetChargingProfile">
+      <soap12:operation soapAction="/SetChargingProfile" style="document" />
       <wsdl:input>
         <soap12:header use="literal" message="tns:Header" part="ChargeBoxIdentity" />
         <soap12:body use="literal" />
