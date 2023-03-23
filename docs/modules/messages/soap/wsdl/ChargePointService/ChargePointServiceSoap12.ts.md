@@ -482,7 +482,7 @@ export interface ISetChargingProfileInput {
     recurrencyKind?: 'Daily' | 'Weekly'
     validFrom?: string
     validTo?: string
-    chargingSchedule?: {
+    chargingSchedule: {
       duration?: number
       startSchedule?: string
       chargingRateUnit: 'A' | 'W'
