@@ -73,10 +73,10 @@ type CentralSystemMessage = {
     request: soap.IUpdateFirmwareInput & { action: 'UpdateFirmware', ocppVersion: 'v1.5-soap' },
     response: soap.IUpdateFirmwareOutput & { action: 'UpdateFirmware', ocppVersion: 'v1.5-soap' },
   },
-  // SetChargingProfile: {
-  //   request: soap.ISetChargingProfileInput & { action: 'SetChargingProfile', ocppVersion: 'v1.5-soap' },
-  //   response: soap.ISetChargingProfileOutput & { action: 'SetChargingProfile', ocppVersion: 'v1.5-soap' },
-  // },
+  SetChargingProfile: {
+    request: soap.ISetChargingProfileInput & { action: 'SetChargingProfile', ocppVersion: 'v1.5-soap' },
+    response: soap.ISetChargingProfileOutput & { action: 'SetChargingProfile', ocppVersion: 'v1.5-soap' },
+  },
 };
 
 export default CentralSystemMessage;

@@ -40,6 +40,8 @@ tslint:disable:max-line-length no-empty-interface
   - [IResetOutput (interface)](#iresetoutput-interface)
   - [ISendLocalListInput (interface)](#isendlocallistinput-interface)
   - [ISendLocalListOutput (interface)](#isendlocallistoutput-interface)
+  - [ISetChargingProfileInput (interface)](#isetchargingprofileinput-interface)
+  - [ISetChargingProfileOutput (interface)](#isetchargingprofileoutput-interface)
   - [IUnlockConnectorInput (interface)](#iunlockconnectorinput-interface)
   - [IUnlockConnectorOutput (interface)](#iunlockconnectoroutput-interface)
   - [IUpdateFirmwareInput (interface)](#iupdatefirmwareinput-interface)
@@ -462,6 +464,48 @@ export interface ISendLocalListOutput {
   /** urn://Ocpp/Cp/2012/06/#s:string(undefined) */
   hash: string
 }
+```
+
+## ISetChargingProfileInput (interface)
+
+**Signature**
+
+```ts
+export interface ISetChargingProfileInput {
+  connectorId: number
+  csChargingProfiles: {
+    chargingProfileId: number
+    transactionId?: number
+    stackLevel: number
+    chargingProfilePurpose: 'ChargePointMaxProfile' | 'TxDefaultProfile' | 'TxProfile'
+    chargingProfileKind: 'Absolute' | 'Recurring' | 'Relative'
+    recurrencyKind?: 'Daily' | 'Weekly'
+    validFrom?: string
+    validTo?: string
+    chargingSchedule: {
+      duration?: number
+      startSchedule?: string
+      chargingRateUnit: 'A' | 'W'
+      chargingSchedulePeriod: {
+        startPeriod: number
+        limit: number
+        numberPhases?: number
+        [k: string]: unknown
+      }[]
+      minChargingRate?: number
+      [k: string]: unknown
+    }
+    [k: string]: unknown
+  }
+}
+```
+
+## ISetChargingProfileOutput (interface)
+
+**Signature**
+
+```ts
+export interface ISetChargingProfileOutput {}
 ```
 
 ## IUnlockConnectorInput (interface)
