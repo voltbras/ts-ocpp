@@ -32,7 +32,8 @@ export const centralSystemActions: CentralSystemAction<'v1.6-json'>[] = [
   "TriggerMessage",
   "UnlockConnector",
   "UpdateFirmware",
-  "SetChargingProfile"
+  "SetChargingProfile",
+  "SendLocalList"
 ];
 
 export const soapCentralSystemActions: CentralSystemAction<'v1.5-soap'>[] = [
@@ -51,7 +52,8 @@ export const soapCentralSystemActions: CentralSystemAction<'v1.5-soap'>[] = [
   "SendLocalList",
   "UnlockConnector",
   "UpdateFirmware",
-  "SetChargingProfile"
+  "SetChargingProfile",
+  "SendLocalList"
 ];
 
 export type CentralSystemRequest<T extends CentralSystemAction, V extends OCPPVersion = OCPPVersion> = CentralSystemMessage<V>[T]['request'];

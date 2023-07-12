@@ -203,9 +203,7 @@ export interface ISendLocalListInput {
   updateType: "Differential" | "Full";
   /** urn://Ocpp/Cp/2012/06/#s:int(undefined) */
   listVersion: number;
-  localAuthorisationList: ChargePointServiceSoap12Types.IlocalAuthorisationList[];
-  /** urn://Ocpp/Cp/2012/06/#s:string(undefined) */
-  hash: string;
+  localAuthorizationList: ChargePointServiceSoap12Types.IlocalAuthorizationList[];
 }
 
 export interface ISendLocalListOutput {
@@ -216,8 +214,6 @@ export interface ISendLocalListOutput {
     | "HashError"
     | "NotSupported"
     | "VersionMismatch";
-  /** urn://Ocpp/Cp/2012/06/#s:string(undefined) */
-  hash: string;
 }
 
 export interface IChargePointServiceSoap12Soap {
@@ -401,11 +397,11 @@ export namespace ChargePointServiceSoap12Types {
     /** urn://Ocpp/Cp/2012/06/#AuthorizationStatus(Accepted,Blocked,Expired,Invalid,ConcurrentTx) */
     status: "Accepted" | "Blocked" | "Expired" | "Invalid" | "ConcurrentTx";
     /** urn://Ocpp/Cp/2012/06/#s:dateTime(undefined) */
-    expiryDate: Date;
+    expiryDate?: Date;
     /** urn://Ocpp/Cp/2012/06/#IdToken(maxLength) */
-    parentIdTag: string;
+    parentIdTag?: string;
   }
-  export interface IlocalAuthorisationList {
+  export interface IlocalAuthorizationList {
     /** urn://Ocpp/Cp/2012/06/#IdToken(maxLength) */
     idTag: string;
     idTagInfo: ChargePointServiceSoap12Types.IidTagInfo;
