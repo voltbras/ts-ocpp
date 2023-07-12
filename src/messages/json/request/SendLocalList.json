@@ -15,7 +15,7 @@
                         "type": "string",
                         "maxLength": 20
                     },
-                    "tagInfo": {
+                    "idTagInfo": {
                         "type": "object",
 						"expiryDate": {
 							"type": "string",
