@@ -447,9 +447,7 @@ export interface ISendLocalListInput {
   updateType: 'Differential' | 'Full'
   /** urn://Ocpp/Cp/2012/06/#s:int(undefined) */
   listVersion: number
-  localAuthorisationList: ChargePointServiceSoap12Types.IlocalAuthorisationList[]
-  /** urn://Ocpp/Cp/2012/06/#s:string(undefined) */
-  hash: string
+  localAuthorizationList: ChargePointServiceSoap12Types.IlocalAuthorizationList[]
 }
 ```
 
@@ -461,8 +459,6 @@ export interface ISendLocalListInput {
 export interface ISendLocalListOutput {
   /** urn://Ocpp/Cp/2012/06/#UpdateStatus(Accepted,Failed,HashError,NotSupported,VersionMismatch) */
   status: 'Accepted' | 'Failed' | 'HashError' | 'NotSupported' | 'VersionMismatch'
-  /** urn://Ocpp/Cp/2012/06/#s:string(undefined) */
-  hash: string
 }
 ```
 
