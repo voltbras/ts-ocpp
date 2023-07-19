@@ -295,67 +295,71 @@ export default class CentralSystem {
 
   /** @internal */
   private async handleConnection(socket: WebSocket, metadata: RequestMetadata) {
-    const { chargePointId } = metadata;
-    const cpDebug = debug.extend(chargePointId);
-    cpDebug('websocket connection: handling connection');
-    this.listeners.forEach((f) => f(chargePointId, 'connected'));
-
-    let isAlive = true;
-    socket.on('pong', () => {
-      cpDebug('websocket connection: received pong');
-      isAlive = true;
-    });
     function noop() { }
-    const pingInterval = setInterval(() => {
-      if (isAlive === false) {
-        cpDebug('websocket connection: connection is dead, closing');
-        return socket.terminate();
+    try {
+      const { chargePointId } = metadata;
+      const cpDebug = debug.extend(chargePointId);
+      cpDebug('websocket connection: handling connection');
+      this.listeners.forEach((f) => f(chargePointId, 'connected'));
+
+      let isAlive = true;
+      socket.on('pong', () => {
+        cpDebug('websocket connection: received pong');
+        isAlive = true;
+      });
+      const pingInterval = setInterval(() => {
+        if (isAlive === false) {
+          cpDebug('websocket connection: connection is dead, closing');
+          return socket.terminate();
+        }
+        isAlive = false;
+        cpDebug('websocket connection: sending ping');
+        socket.ping(noop);
+      }, this.options.websocketPingInterval);
+
+      const connection = new Connection(
+        socket,
+        // @ts-ignore, TS is not good with dependent typing, it doesn't realize that the function
+        // returns OCPP v1.6 responses when the request is a OCPP v1.6 request
+        (request, validationError) => this.cpHandler(request, { ...metadata, validationError }),
+        chargePointActions,
+        centralSystemActions,
+        this.options.rejectInvalidRequests,
+        {
+          onReceiveRequest: message => this.options.onWebsocketRequestResponse?.('chargepoint', 'request', message, metadata),
+          onSendResponse: message => this.options.onWebsocketRequestResponse?.('chargepoint', 'response', message, metadata),
+          onReceiveResponse: message => this.options.onWebsocketRequestResponse?.('central-system', 'response', message, metadata),
+          onSendRequest: message => this.options.onWebsocketRequestResponse?.('central-system', 'request', message, metadata),
+        },
+        this.options.websocketRequestTimeout,
+      );
+
+      if (!this.connections[chargePointId]) {
+        cpDebug('websocket connection: creating new connection list entry');
+        this.connections[chargePointId] = [];
+      } else {
+        cpDebug('websocket connection: adding to existing connection list entry(previous list length: %d)', this.connections[chargePointId].length);
       }
-      isAlive = false;
-      cpDebug('websocket connection: sending ping');
-      socket.ping(noop);
-    }, this.options.websocketPingInterval);
+      this.connections[chargePointId].push(connection);
 
-    const connection = new Connection(
-      socket,
-      // @ts-ignore, TS is not good with dependent typing, it doesn't realize that the function
-      // returns OCPP v1.6 responses when the request is a OCPP v1.6 request
-      (request, validationError) => this.cpHandler(request, { ...metadata, validationError }),
-      chargePointActions,
-      centralSystemActions,
-      this.options.rejectInvalidRequests,
-      {
-        onReceiveRequest: message => this.options.onWebsocketRequestResponse?.('chargepoint', 'request', message, metadata),
-        onSendResponse: message => this.options.onWebsocketRequestResponse?.('chargepoint', 'response', message, metadata),
-        onReceiveResponse: message => this.options.onWebsocketRequestResponse?.('central-system', 'response', message, metadata),
-        onSendRequest: message => this.options.onWebsocketRequestResponse?.('central-system', 'request', message, metadata),
-      },
-      this.options.websocketRequestTimeout,
-    );
-
-    if (!this.connections[chargePointId]) {
-      cpDebug('websocket connection: creating new connection list entry');
-      this.connections[chargePointId] = [];
-    } else {
-      cpDebug('websocket connection: adding to existing connection list entry(previous list length: %d)', this.connections[chargePointId].length);
+      socket.on('error', (error) => {
+        cpDebug('websocket connection: socket error: %s', error.message);
+        this.options.onWebsocketError?.(error, metadata);
+      });
+      socket.on('message', (data) => {
+        cpDebug('websocket connection: received message: %s', data);
+        this.options.onRawWebsocketData?.(data, metadata);
+        connection.handleWebsocketData(data)
+      });
+      socket.on('close', () => {
+        cpDebug('websocket connection: closing conection');
+        const closedIndex = this.connections[chargePointId].findIndex(c => c === connection);
+        this.connections[chargePointId].splice(closedIndex, 1);
+        clearInterval(pingInterval);
+        this.listeners.forEach((f) => f(chargePointId, 'disconnected'));
+      });
+    } catch (e) {
+      console.log(`Error in handleConnection ${e}`);
     }
-    this.connections[chargePointId].push(connection);
-
-    socket.on('error', (error) => {
-      cpDebug('websocket connection: socket error: %s', error.message);
-      this.options.onWebsocketError?.(error, metadata);
-    });
-    socket.on('message', (data) => {
-      cpDebug('websocket connection: received message: %s', data);
-      this.options.onRawWebsocketData?.(data, metadata);
-      connection.handleWebsocketData(data)
-    });
-    socket.on('close', () => {
-      cpDebug('websocket connection: closing conection');
-      const closedIndex = this.connections[chargePointId].findIndex(c => c === connection);
-      this.connections[chargePointId].splice(closedIndex, 1);
-      clearInterval(pingInterval);
-      this.listeners.forEach((f) => f(chargePointId, 'disconnected'));
-    });
   }
 }
