@@ -148,7 +148,12 @@ export default class CentralSystem {
     this.listeners.push(listener);
   }
 
-  public close(): Promise<void> {
+  public async close(): Promise<void> {
+    Object.values(this.connections).map((chargepointConnections) => {
+      chargepointConnections.map((connection) => {
+        connection.close();
+      });
+    })
     const httpClosing = new Promise(resolve => this.httpServer.close(resolve));
     const wsClosing = new Promise(resolve => this.websocketsServer.close(resolve));
     return Promise.all([httpClosing, wsClosing]).then(() => { });
