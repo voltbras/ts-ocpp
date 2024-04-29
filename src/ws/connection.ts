@@ -12,6 +12,8 @@ const debug = Debug("ts-ocpp:ws");
 
 export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
   private messageTriggers: Record<string, (m: OCPPJMessage) => void> = {};
+  private timeouts: Record<string, NodeJS.Timeout> = {};
+
   constructor(
     public readonly socket: WebSocket,
     private readonly requestHandler: RequestHandler<ReqAction, ValidationError | undefined, 'v1.6-json'>,
@@ -32,6 +34,7 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
       const id = uuid.v4();
       const waitResponse: Promise<OCPPJMessage> = new Promise((resolve, reject) => {
         const timeoutId = setTimeout(() => reject(new OCPPRequestTimedOutError(action)), this.requestTimeout ?? 30_000);
+        this.timeouts[id] = timeoutId;
         this.messageTriggers[id] = function (ocppMessage) {
           resolve(ocppMessage);
           clearTimeout(timeoutId);
@@ -57,6 +60,7 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
       debug(`received response %o`, responseMessage);
       // cleanup function to avoid memory leak
       delete this.messageTriggers[id];
+      delete this.timeouts[id];
 
       this.handlers?.onReceiveResponse(responseMessage);
       if (responseMessage.type === MessageType.CALL) return Left(
@@ -79,6 +83,11 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
   }
 
   public close() {
+    Object.entries(this.timeouts).forEach(([requestId, timeout]) => {
+      clearTimeout(timeout);
+      delete this.messageTriggers[requestId];
+      delete this.timeouts[requestId];
+    });
     this.socket.close();
   }
 
