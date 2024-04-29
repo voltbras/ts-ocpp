@@ -77,7 +77,7 @@ public addConnectionListener(listener: ConnectionListener)
 **Signature**
 
 ```ts
-public close(): Promise<void>
+public async close(): Promise<void>
 ```
 
 ### sendRequest (method)
