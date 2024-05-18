@@ -14,6 +14,7 @@ Sets up a central system, that can communicate with charge points
 
 - [Central System](#central-system)
   - [CentralSystem (class)](#centralsystem-class)
+    - [getConnectedChargePoints (method)](#getconnectedchargepoints-method)
     - [addConnectionListener (method)](#addconnectionlistener-method)
     - [close (method)](#close-method)
     - [sendRequest (method)](#sendrequest-method)
@@ -62,6 +63,14 @@ const centralSystem = new CentralSystem(3000, (req, { chargePointId }) => {
   }
   throw new Error('message not supported')
 })
+```
+
+### getConnectedChargePoints (method)
+
+**Signature**
+
+```ts
+public getConnectedChargePoints(): string[]
 ```
 
 ### addConnectionListener (method)

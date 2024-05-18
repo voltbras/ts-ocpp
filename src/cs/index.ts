@@ -144,6 +144,10 @@ export default class CentralSystem {
     this.websocketsServer = this.setupWebsocketsServer();
   }
 
+  public getConnectedChargePoints(): string[] {
+    return Object.keys(this.connections);
+  }
+
   public addConnectionListener(listener: ConnectionListener) {
     this.listeners.push(listener);
   }
