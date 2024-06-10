@@ -17,6 +17,7 @@ Sets up a central system, that can communicate with charge points
     - [getConnectedChargePoints (method)](#getconnectedchargepoints-method)
     - [addConnectionListener (method)](#addconnectionlistener-method)
     - [close (method)](#close-method)
+    - [closeConnection (method)](#closeconnection-method)
     - [sendRequest (method)](#sendrequest-method)
 - [utils](#utils)
   - [CSSendRequestArgs (type alias)](#cssendrequestargs-type-alias)
@@ -87,6 +88,14 @@ public addConnectionListener(listener: ConnectionListener)
 
 ```ts
 public async close(): Promise<void>
+```
+
+### closeConnection (method)
+
+**Signature**
+
+```ts
+public async closeConnection(chargePointId: string): Promise<void>
 ```
 
 ### sendRequest (method)

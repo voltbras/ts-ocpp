@@ -163,6 +163,11 @@ export default class CentralSystem {
     return Promise.all([httpClosing, wsClosing]).then(() => { });
   }
 
+  public async closeConnection(chargePointId: string): Promise<void> {
+    const connections = this.connections[chargePointId];
+    await Promise.all(connections.map((connection) => connection.close()));
+  }
+
   sendRequest<V extends OCPPVersion, T extends CentralSystemAction>(args: CSSendRequestArgs<T, V>): EitherAsync<OCPPRequestError, Response<T, V>> {
     return EitherAsync.fromPromise(async () => {
       const { chargePointId, payload, action } = args;
