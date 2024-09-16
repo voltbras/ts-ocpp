@@ -152,10 +152,10 @@ export default class CentralSystem {
     this.listeners.push(listener);
   }
 
-  public async close(): Promise<void> {
+  public async close(code?: number): Promise<void> {
     Object.values(this.connections).map((chargepointConnections) => {
       chargepointConnections.map((connection) => {
-        connection.close();
+        connection.close(code);
       });
     })
     const httpClosing = new Promise(resolve => this.httpServer.close(resolve));
@@ -163,10 +163,10 @@ export default class CentralSystem {
     return Promise.all([httpClosing, wsClosing]).then(() => { });
   }
 
-  public async closeConnection(chargePointId: string): Promise<void> {
+  public async closeConnection(chargePointId: string, code?: number): Promise<void> {
     const connections = this.connections[chargePointId];
     if (connections) {
-      await Promise.all(connections.map((connection) => connection.close()));
+      await Promise.all(connections.map((connection) => connection.close(code)));
     }
   }
 
