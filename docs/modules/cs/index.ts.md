@@ -87,7 +87,7 @@ public addConnectionListener(listener: ConnectionListener)
 **Signature**
 
 ```ts
-public async close(): Promise<void>
+public async close(code?: number): Promise<void>
 ```
 
 ### closeConnection (method)
@@ -95,7 +95,7 @@ public async close(): Promise<void>
 **Signature**
 
 ```ts
-public async closeConnection(chargePointId: string): Promise<void>
+public async closeConnection(chargePointId: string, code?: number): Promise<void>
 ```
 
 ### sendRequest (method)
