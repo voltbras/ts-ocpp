@@ -82,13 +82,13 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
       })
   }
 
-  public close() {
+  public close(code?: number) {
     Object.entries(this.timeouts).forEach(([requestId, timeout]) => {
       clearTimeout(timeout);
       delete this.messageTriggers[requestId];
       delete this.timeouts[requestId];
     });
-    this.socket.close();
+    this.socket.close(code);
   }
 
   private async sendOCPPMessage(message: OCPPJMessage): Promise<void> {
