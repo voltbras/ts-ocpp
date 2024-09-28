@@ -51,12 +51,18 @@ export default class ChargePoint {
   constructor(
     readonly id: string,
     private readonly requestHandler: RequestHandler<CentralSystemAction<'v1.6-json'>, ValidationError | undefined, 'v1.6-json'>,
-    private readonly csUrl: string
+    private readonly csUrl: string,
+    private readonly basicAuth: {username:string,password:string} | undefined = undefined,
   ) { }
 
   async connect(): Promise<Connection<CentralSystemAction<'v1.6-json'>>> {
     const url = `${this.csUrl}/${this.id}`;
-    const socket = new WebSocket(url, SUPPORTED_PROTOCOLS);
+    const authHeader = this.basicAuth ? {
+        'authorization': 'Basic ' + Buffer.from(`${this.basicAuth.username}:${this.basicAuth.password}`).toString('base64')
+    }: {};
+    const socket = new WebSocket(url, SUPPORTED_PROTOCOLS,{
+      headers: authHeader,
+    });
 
     const connection = new Connection(
       socket,
@@ -78,7 +84,7 @@ export default class ChargePoint {
   /**
    * @example
    * import { ChargePoint } from '@voltbras/ts-ocpp';
-   * 
+   *
    * async function communicate(chargePoint: ChargePoint) {
    *   const response = await chargePoint.sendRequest({ action: 'Heartbeat', ocppVersion: 'v1.6-json', payload: {}});
    *   // it can be used in a functional way
