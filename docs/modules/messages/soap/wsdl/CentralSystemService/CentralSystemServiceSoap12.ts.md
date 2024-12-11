@@ -99,7 +99,7 @@ export interface IBootNotificationInput {
 ```ts
 export interface IBootNotificationOutput {
   /** urn://Ocpp/Cs/2012/06/#RegistrationStatus(Accepted,Rejected) */
-  status: 'Accepted' | 'Rejected'
+  status: 'Accepted' | 'Rejected' | 'Pending'
   /** urn://Ocpp/Cs/2012/06/#s:dateTime(undefined) */
   currentTime: string
   /** urn://Ocpp/Cs/2012/06/#s:int(undefined) */
