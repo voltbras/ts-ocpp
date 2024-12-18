@@ -58,10 +58,10 @@ export default class ChargePoint {
     private readonly csUrl: string
   ) { }
 
-  async connect(connectArgs: ConnectArgs): Promise<Connection<CentralSystemAction<'v1.6-json'>>> {
+  async connect(connectArgs?: ConnectArgs): Promise<Connection<CentralSystemAction<'v1.6-json'>>> {
     const url = `${this.csUrl}/${this.id}`;
     const socket = new WebSocket(url, SUPPORTED_PROTOCOLS, {
-      auth: `${this.id}:${connectArgs.auth}`,
+      auth: `${this.id}:${connectArgs?.auth}`,
       ...connectArgs,
     });
 
