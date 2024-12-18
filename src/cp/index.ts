@@ -5,7 +5,7 @@ import { Connection, SUPPORTED_PROTOCOLS } from '../ws';
 import { ChargePointAction, chargePointActions } from '../messages/cp';
 import { EitherAsync, Left } from 'purify-ts';
 import { OCPPRequestError, ValidationError } from '../errors';
-import { OCPPVersion } from '../types';
+import { OCPPVersion, WebsocketOptions } from '../types';
 
 export type CPSendRequestArgs<T extends ChargePointAction<V>, V extends OCPPVersion> = {
   ocppVersion: 'v1.6-json',
@@ -45,6 +45,7 @@ export type CPSendRequestArgs<T extends ChargePointAction<V>, V extends OCPPVers
  *
  * @category Charge Point
  */
+
 export default class ChargePoint {
   private connection?: Connection<CentralSystemAction<'v1.6-json'>>;
 
@@ -54,9 +55,13 @@ export default class ChargePoint {
     private readonly csUrl: string
   ) { }
 
-  async connect(): Promise<Connection<CentralSystemAction<'v1.6-json'>>> {
+  async connect(websocketOptions: WebsocketOptions): Promise<Connection<CentralSystemAction<'v1.6-json'>>> {
+    websocketOptions
     const url = `${this.csUrl}/${this.id}`;
-    const socket = new WebSocket(url, SUPPORTED_PROTOCOLS);
+    const socket = new WebSocket(url, SUPPORTED_PROTOCOLS, {
+      auth: `${this.id}:${websocketOptions.auth}`,
+      ...websocketOptions,
+    });
 
     const connection = new Connection(
       socket,
