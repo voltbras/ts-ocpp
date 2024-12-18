@@ -2,9 +2,7 @@
   "compilerOptions": {
     "outDir": "dist",
     "module": "commonjs",
-    "lib": [
-      "es2019"
-    ],
+    "lib": ["es2019"],
     "declaration": true,
     "target": "es2018",
     "sourceMap": true,
@@ -13,12 +11,6 @@
     "skipLibCheck": true,
     "stripInternal": true
   },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "**/*.spec.ts",
-    "examples"
-  ]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts", "examples"]
 }
