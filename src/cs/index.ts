@@ -121,10 +121,10 @@ export default class CentralSystem {
     this.cpHandler = cpHandler;
     const host = options.host ?? '0.0.0.0';
     this.options = {
-      ...options,
-      rejectInvalidRequests: options.rejectInvalidRequests ?? true,
+      rejectInvalidRequests: true,
       websocketPingInterval: 30_000,
-      websocketAuthorizer: options.websocketAuthorizer ?? (() => true),
+      websocketAuthorizer: () => true,
+      ...options,
     };
     debug('creating central system on port %d - options: %o', port, this.options);
 
