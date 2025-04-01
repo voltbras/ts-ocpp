@@ -17,6 +17,7 @@ parent: Modules
     - [close (method)](#close-method)
 - [utils](#utils)
   - [CPSendRequestArgs (type alias)](#cpsendrequestargs-type-alias)
+  - [ConnectArgs (type alias)](#connectargs-type-alias)
 
 ---
 
@@ -70,7 +71,7 @@ const chargePoint = new ChargePoint(
 **Signature**
 
 ```ts
-async connect(websocketOptions: WebsocketOptions): Promise<Connection<CentralSystemAction<'v1.6-json'>>>
+async connect(connectArgs?: ConnectArgs): Promise<Connection<CentralSystemAction<'v1.6-json'>>>
 ```
 
 ### sendRequest (method)
@@ -115,4 +116,12 @@ export type CPSendRequestArgs<T extends ChargePointAction<V>, V extends OCPPVers
   payload: Omit<Request<T, V>, 'action' | 'ocppVersion'>
   action: T
 }
+```
+
+## ConnectArgs (type alias)
+
+**Signature**
+
+```ts
+export type ConnectArgs = http.ClientRequestArgs & WebSocket.ClientOptions
 ```
