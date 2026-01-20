@@ -152,6 +152,10 @@ export default class CentralSystem {
     this.listeners.push(listener);
   }
 
+  public removeConnectionListener(listener: ConnectionListener) {
+    this.listeners = this.listeners.filter((existing) => existing !== listener);
+  }
+
   public async close(code?: number): Promise<void> {
     Object.values(this.connections).map((chargepointConnections) => {
       chargepointConnections.map((connection) => {
@@ -370,6 +374,9 @@ export default class CentralSystem {
       cpDebug('websocket connection: closing conection');
       const closedIndex = this.connections[chargePointId].findIndex(c => c === connection);
       this.connections[chargePointId].splice(closedIndex, 1);
+      if (this.connections[chargePointId].length === 0) {
+        delete this.connections[chargePointId];
+      }
       clearInterval(pingInterval);
       this.listeners.forEach((f) => f(chargePointId, 'disconnected'));
     });

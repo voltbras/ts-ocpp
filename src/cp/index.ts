@@ -75,6 +75,12 @@ export default class ChargePoint {
     // this.socket.on('close', () => (this.socket = undefined));
     socket.on('error', console.error);
     socket.on('message', (data) => connection?.handleWebsocketData(data));
+    socket.on('close', () => {
+      connection.close();
+      if (this.connection === connection) {
+        this.connection = undefined;
+      }
+    });
 
     return new Promise((resolve) => {
       socket?.on('open', () => resolve(connection));
