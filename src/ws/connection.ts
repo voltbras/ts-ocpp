@@ -33,7 +33,11 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
     return EitherAsync.fromPromise(async () => {
       const id = uuid.v4();
       const waitResponse: Promise<OCPPJMessage> = new Promise((resolve, reject) => {
-        const timeoutId = setTimeout(() => reject(new OCPPRequestTimedOutError(action)), this.requestTimeout ?? 30_000);
+        const timeoutId = setTimeout(() => {
+          delete this.messageTriggers[id];
+          delete this.timeouts[id];
+          reject(new OCPPRequestTimedOutError(action));
+        }, this.requestTimeout ?? 30_000);
         this.timeouts[id] = timeoutId;
         this.messageTriggers[id] = function (ocppMessage) {
           resolve(ocppMessage);
@@ -88,7 +92,9 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
       delete this.messageTriggers[requestId];
       delete this.timeouts[requestId];
     });
-    this.socket.close(code);
+    if (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING) {
+      this.socket.close(code);
+    }
   }
 
   private async sendOCPPMessage(message: OCPPJMessage): Promise<void> {
@@ -148,8 +154,13 @@ export default class Connection<ReqAction extends ActionName<'v1.6-json'>> {
           this.handlers?.onSendResponse(formattedResponse);
           return Just(formattedResponse);
         case MessageType.CALLERROR:
-        case MessageType.CALLRESULT:
-          this.messageTriggers[message.id](message);
+        case MessageType.CALLRESULT: {
+          const trigger = this.messageTriggers[message.id];
+          if (trigger) {
+            trigger(message);
+          }
+          break;
+        }
       }
       return Nothing;
     })
