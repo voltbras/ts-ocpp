@@ -3,6 +3,15 @@ import CentralSystem from '../src/cs';
 const cs = new CentralSystem(8080, (req, metadata) => {
   const { ocppVersion } = req;
   switch (req.action) {
+    case 'BootNotification':
+      console.log(`chargepoint ${metadata.chargePointId} is booting:`, req);
+      return {
+        action: req.action,
+        ocppVersion,
+        status: 'Accepted' as const,
+        currentTime: new Date().toISOString(),
+        interval: 300, // heartbeat interval in seconds
+      };
     case 'Heartbeat':
       return { action: req.action, ocppVersion, currentTime: new Date().toISOString() };
     case 'StatusNotification':
